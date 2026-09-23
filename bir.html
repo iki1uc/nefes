@@ -1,24 +1,91 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>bir — der Punkt</title>
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  canvas{display:block;width:100vw;height:100vh}
+</style>
+</head>
+<body>
 <canvas id="c"></canvas>
+
 <script>
-const c = document.getElementById('c');
-const ctx = c.getContext('2d'); // 2D, nicht webgl
+// ============================================================
+// bir.html — der Punkt
+// ١
+// Nichts. Nur Atem im Dunkeln.
+// Fallbacks für alte Handys.
+// ============================================================
 
-function draw() {
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, c.width, c.height);
-  // dein Atem, dein Anker, dein Nefes
-}
+(function(){
+  'use strict';
 
-async function online() {
-  if (!navigator.onLine) return;
-  try {
-    const r = await fetch('/api/klarung');
-    const d = await r.json();
-    // Echtzeit-Klärung
-  } catch (e) {}
-}
+  const c = document.getElementById('c');
+  const ctx = c.getContext('2d');
 
-window.addEventListener('online', online);
-window.addEventListener('offline', () => {});
-draw();
+  // Fallbacks — läuft auch auf 2010er Handys
+  const now = (window.performance && performance.now)
+    ? performance.now.bind(performance)
+    : Date.now;
+  const raf = window.requestAnimationFrame
+    || (cb => setTimeout(cb, 16));
+
+  function resize(){
+    c.width = window.innerWidth;
+    c.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const start = now();
+
+  // Atem — 4 Sekunden ein, 4 Sekunden aus
+  const ATEM = 4000;
+
+  function draw(){
+    const t = now() - start;
+
+    // Hintergrund: schwarz
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, c.width, c.height);
+
+    // Atem — eine sehr subtile Helligkeit
+    const phase = (t % (ATEM * 2)) / (ATEM * 2);
+    const atem = (Math.sin(phase * Math.PI * 2) + 1) / 2; // 0..1
+
+    // Ein einzelner Punkt — kaum sichtbar, aber da
+    const cx = c.width / 2;
+    const cy = c.height / 2;
+    const r = 2 + atem * 4;
+    const alpha = 0.3 + atem * 0.7;
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0, 255, 170, ' + alpha + ')';
+    ctx.fill();
+
+    raf(draw);
+  }
+
+  // Online/Offline — still. bir braucht kein Netz.
+  async function online(){
+    if (!navigator.onLine) return;
+    try {
+      await fetch('/api/bir', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ t: (now() - start) / 1000 })
+      });
+    } catch (e) { /* still */ }
+  }
+  window.addEventListener('online', online);
+  window.addEventListener('offline', () => {});
+
+  draw();
+})();
 </script>
+</body>
+</html>
