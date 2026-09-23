@@ -1,64 +1,49 @@
-// sorge.js — Sorge · Umsorge · gerechtfertigter Zustand
-// Türkçe: sorge = kaygı · umsorge = kaygıyı çözme
-//         marker = işaret · nutzung = kullanım
+// kaygıyı.js — die Sorge
+// Türkçe: kaygı = Sorge, Angst
+// Maya:   kan = Form
+// Inka:   tawa = vier
 //
-// Maya:  kan = 4 · Form
-// Inka:  tawa = 4 · vier
-//
-// Die Logik unterstützt sich selbst, während sie läuft.
+// Sorge → Umsorge → gerechtfertigt → Marker → Nutzung.
+// Die Logik trägt sich selbst, während sie läuft.
 
 (function () {
   'use strict';
 
-  // ============================================================
-  // SORGE — etwas ist nicht in Ordnung
-  // ============================================================
-  const sorgen = new Map();
+  const kaygilar = new Map();
 
-  function sorge(id, grund) {
-    sorgen.set(id, {
+  function kaygı(id, grund) {
+    kaygilar.set(id, {
       id: id,
       grund: grund || 'bilinmiyor',
-      zustand: 'sorge',       // offen
+      zustand: 'kaygı',
       seit: Date.now()
     });
     return marker();
   }
 
-  // ============================================================
-  // UMSORGE — die Sorge wird bearbeitet
-  // ============================================================
   function umsorge(id, grund) {
-    const s = sorgen.get(id);
-    if (!s) return marker();
-    s.zustand = 'umsorge';    // in Bearbeitung
-    s.umsorge = grund || 'bearbeitet';
+    const k = kaygilar.get(id);
+    if (!k) return marker();
+    k.zustand = 'umsorge';
+    k.umsorge = grund || 'bearbeitet';
     return marker();
   }
 
-  // ============================================================
-  // GERECHTFERTIGT — der Zustand ist geklärt
-  // ============================================================
   function rechtfertigen(id, warum) {
-    const s = sorgen.get(id);
-    if (!s) return marker();
-    s.zustand = 'gerechtfertigt';
-    s.rechtfertigung = warum || 'geklärt';
+    const k = kaygilar.get(id);
+    if (!k) return marker();
+    k.zustand = 'gerechtfertigt';
+    k.rechtfertigung = warum || 'geklärt';
     return marker();
   }
 
-  // ============================================================
-  // MARKER — der gerechtfertigte Zustand
-  // Wird von anderen Dateien genutzt
-  // ============================================================
   function marker() {
-    const alle = Array.from(sorgen.values());
-    const offen = alle.filter(s => s.zustand === 'sorge').length;
-    const bearbeitet = alle.filter(s => s.zustand === 'umsorge').length;
-    const gerecht = alle.filter(s => s.zustand === 'gerechtfertigt').length;
-
+    const alle = Array.from(kaygilar.values());
+    const offen = alle.filter(function (k) { return k.zustand === 'kaygı'; }).length;
+    const bearbeitet = alle.filter(function (k) { return k.zustand === 'umsorge'; }).length;
+    const gerecht = alle.filter(function (k) { return k.zustand === 'gerechtfertigt'; }).length;
     return {
-      marker: 'sorge',
+      marker: 'kaygıyı',
       anzahl: alle.length,
       offen: offen,
       bearbeitet: bearbeitet,
@@ -66,53 +51,36 @@
       bereit: offen === 0,
       maya: alle.length === 0 ? 'ma\'' : alle.length === 1 ? 'hun' : 'ka',
       inka: alle.length === 0 ? 'mana' : alle.length === 1 ? 'huk' : 'iskay',
-      hinweis: offen === 0
-        ? 'hepsi gerechtfertigt'
-        : offen + ' offen · ' + bearbeitet + ' bearbeitet'
+      hinweis: offen === 0 ? 'hepsi gerechtfertigt' : offen + ' offen'
     };
   }
 
-  // ============================================================
-  // NUTZUNG — andere Dateien nutzen den Marker
-  // ============================================================
   function nutzen() {
     const m = marker();
-    if (!m.bereit) {
-      return { nutzbar: false, grund: 'sorge offen', marker: m };
-    }
+    if (!m.bereit) return { nutzbar: false, grund: 'sorge offen', marker: m };
     return { nutzbar: true, marker: m };
   }
 
-  // ============================================================
-  // WÄHREND — die Logik unterstützt sich selbst
-  // ============================================================
   function waehrend() {
     return setInterval(function () {
       const m = marker();
       if (typeof window.console !== 'undefined') {
-        console.log('[sorge]', m.marker, m.hinweis);
+        console.log('[kaygıyı]', m.marker, m.hinweis);
       }
     }, 5000);
   }
 
-  // ============================================================
-  // ERKLÄRUNG
-  // ============================================================
   function erklaerung() {
-    return 'sorge → umsorge → gerechtfertigt → marker → nutzung. ' +
-           'Die Logik trägt sich selbst, während sie läuft. ' +
-           'Maya: kan. Inka: tawa.';
+    return 'kaygıyı — Sorge → Umsorge → gerechtfertigt → Marker. ' +
+           'Türkçe, Maya, İnka.';
   }
 
-  // ============================================================
-  // ÖFFENTLICH
-  // ============================================================
-  const api = {
-    sorge, umsorge, rechtfertigen,
-    marker, nutzen, waehrend, erklaerung,
-    sorgen
+  const kaygıyı = {
+    kaygı: kaygı, umsorge: umsorge, rechtfertigen: rechtfertigen,
+    marker: marker, nutzen: nutzen, waehrend: waehrend,
+    erklaerung: erklaerung, kaygilar: kaygilar
   };
 
-  if (typeof window !== 'undefined') window.sorge = api;
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  if (typeof window !== 'undefined') window.kaygıyı = kaygıyı;
+  if (typeof module !== 'undefined' && module.exports) module.exports = kaygıyı;
 })();
