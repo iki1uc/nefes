@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>welcome · grün gelb rot · was machst du mit dir</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:#05050c;color:#eee;
+            font-family:monospace;font-size:14px;line-height:1.6}
+
+  #buehne{max-width:640px;margin:0 auto;padding:28px 20px 80px}
+
+  #kopf{text-align:center;margin-bottom:28px}
+  #kopf h1{color:#ffcc44;font-size:17px;margin:0 0 6px;
+           font-weight:normal;letter-spacing:3px}
+  #kopf .hauch{color:#5fc8ff;font-size:10px}
+  #kopf .hauch .maya{color:#00ffaa}
+  #kopf .hauch .inka{color:#ff0066}
+
+  /* Modul-Liste */
+  .modul{
+    display:flex;align-items:center;gap:12px;
+    padding:14px 16px;margin:8px 0;
+    background:rgba(255,255,255,0.02);
+    border:1px solid #1a1a2a;
+    border-left:4px solid #1a1a2a;
+    border-radius:0 6px 6px 0;
+    cursor:pointer;transition:all .25s
+  }
+  .modul:hover{background:rgba(255,255,255,0.04);
+               padding-left:20px}
+  .modul.gruen{border-left-color:#00ffaa}
+  .modul.gelb{border-left-color:#ffcc44}
+  .modul.rot{border-left-color:#ff0066}
+  .modul.grau{border-left-color:#333;opacity:0.5}
+  .modul .licht{
+    width:14px;height:14px;border-radius:50%;
+    background:#333;flex-shrink:0;transition:all .3s
+  }
+  .modul.gruen .licht{background:#00ffaa;
+                      box-shadow:0 0 12px #00ffaa}
+  .modul.gelb .licht{background:#ffcc44;
+                     box-shadow:0 0 12px #ffcc44}
+  .modul.rot .licht{background:#ff0066;
+                    box-shadow:0 0 12px #ff0066}
+  .modul .info{flex:1}
+  .modul .name{color:#ffcc44;font-size:13px;
+               letter-spacing:1px;font-weight:bold}
+  .modul .was{color:#888;font-size:10px;margin-top:2px}
+  .modul .status{color:#5fc8ff;font-size:10px;
+                 letter-spacing:1px}
+
+  /* Welcome-Panel */
+  #welcome{
+    display:none;margin-top:24px;padding:20px;
+    background:rgba(5,5,12,0.95);
+    border:1px solid #1a3a2a;border-radius:8px
+  }
+  #welcome.aktiv{display:block}
+
+  #welcome .w-kopf{color:#ffcc44;font-size:13px;
+                   letter-spacing:2px;margin-bottom:4px}
+  #welcome .w-sub{color:#5fc8ff;font-size:10px;
+                  margin-bottom:18px}
+
+  .frage{margin-bottom:16px}
+  .frage label{display:block;color:#5fc8ff;font-size:11px;
+               letter-spacing:1px;margin-bottom:8px}
+  .frage .skala{display:flex;gap:6px}
+  .frage .skala button{
+    flex:1;padding:8px 4px;background:rgba(255,255,255,0.02);
+    color:#888;border:1px solid #1a1a2a;border-radius:4px;
+    cursor:pointer;font-family:monospace;font-size:11px;
+    transition:all .2s
+  }
+  .frage .skala button:hover{border-color:#5fc8ff;color:#5fc8ff}
+  .frage .skala button.aktiv{
+    background:rgba(255,204,68,0.1);
+    border-color:#ffcc44;color:#ffcc44
+  }
+
+  .knopf{
+    display:block;width:100%;padding:13px;
+    background:rgba(0,255,170,0.05);color:#00ffaa;
+    border:1px solid #00ffaa;border-radius:6px;
+    cursor:pointer;font-family:monospace;font-size:13px;
+    letter-spacing:2px;transition:all .3s;margin-top:8px
+  }
+  .knopf:hover{background:rgba(0,255,170,0.15)}
+
+  /* Ergebnis */
+  #ergebnis{
+    display:none;margin-top:20px;padding:20px;
+    border-radius:8px
+  }
+  #ergebnis.aktiv{display:block}
+  #ergebnis.gruen{background:rgba(0,255,170,0.05);
+                  border:1px solid #00ffaa}
+  #ergebnis.gelb{background:rgba(255,204,68,0.05);
+                 border:1px solid #ffcc44}
+  #ergebnis.rot{background:rgba(255,0,102,0.05);
+                border:1px solid #ff0066}
+
+  #ergebnis .e-kopf{font-size:14px;letter-spacing:3px;
+                    margin-bottom:12px}
+  #ergebnis.gruen .e-kopf{color:#00ffaa}
+  #ergebnis.gelb .e-kopf{color:#ffcc44}
+  #ergebnis.rot .e-kopf{color:#ff0066}
+
+  #ergebnis .e-frage{color:#5fc8ff;font-size:12px;
+                     font-style:italic;margin-bottom:12px;
+                     line-height:1.7}
+  #ergebnis .e-text{color:#eee;font-size:13px;
+                    line-height:1.7;margin-bottom:14px}
+  #ergebnis .e-text b{color:#ffcc44}
+  #ergebnis .e-tat{color:#5fc8ff;font-size:12px;
+                   padding-top:12px;
+                   border-top:1px solid rgba(255,255,255,0.1)}
+
+  /* zurück */
+  .zurueck{
+    display:inline-block;margin-top:16px;
+    color:#ff0066;font-size:11px;letter-spacing:1px;
+    cursor:pointer;background:none;border:none;
+    font-family:monospace;padding:0
+  }
+  .zurueck:hover{letter-spacing:2px}
+
+  #status{
+    position:fixed;bottom:16px;right:16px;
+    padding:8px 14px;background:rgba(5,5,12,0.85);
+    border:1px solid #1a1a2a;border-radius:4px;
+    font-size:10px;color:#666
+  }
+  #status b{color:#ffcc44}
+</style>
+</head>
+<body>
+
+<div id="buehne">
+
+  <div id="kopf">
+    <h1>welcome</h1>
+    <div class="hauch">
+      <span class="maya">maya · ik'</span> ·
+      <span class="maya">was machst du mit dir</span> ·
+      <span class="inka">inka · samay</span>
+    </div>
+  </div>
+
+  <!-- ===== MODULE ===== -->
+  <div id="module"></div>
+
+  <!-- ===== WELCOME ===== -->
+  <div id="welcome">
+    <div class="w-kopf" id="w-kopf">–</div>
+    <div class="w-sub" id="w-sub">
+      bevor du eintrittst: 3 fragen. keine antwort ist falsch.
+    </div>
+
+    <div class="frage">
+      <label>1 · wie ist dein körper?</label>
+      <div class="skala" data-frage="koerper">
+        <button data-w="0">müde</button>
+        <button data-w="1">mittel</button>
+        <button data-w="2">wach</button>
+      </div>
+    </div>
+
+    <div class="frage">
+      <label>2 · wie ist dein geist?</label>
+      <div class="skala" data-frage="geist">
+        <button data-w="0">laut</button>
+        <button data-w="1">ruhig</button>
+        <button data-w="2">klar</button>
+      </div>
+    </div>
+
+    <div class="frage">
+      <label>3 · wie ist deine zeit?</label>
+      <div class="skala" data-frage="zeit">
+        <button data-w="0">knapp</button>
+        <button data-w="1">geht</button>
+        <button data-w="2">offen</button>
+      </div>
+    </div>
+
+    <button class="knopf" onclick="welcome.pruefen()">
+      willkommen prüfen
+    </button>
+
+    <button class="zurueck" onclick="welcome.zurueck()">
+      ← zurück zur liste
+    </button>
+  </div>
+
+  <!-- ===== ERGEBNIS ===== -->
+  <div id="ergebnis">
+    <div class="e-kopf" id="e-kopf">–</div>
+    <div class="e-frage" id="e-frage">–</div>
+    <div class="e-text" id="e-text">–</div>
+    <div class="e-tat" id="e-tat">–</div>
+    <button class="zurueck" onclick="welcome.zurueck()">
+      ← zurück zur liste
+    </button>
+  </div>
+
+</div>
+
+<div id="status">
+  module: <b id="st-m">0</b> ·
+  bereit: <b id="st-b">0</b> ·
+  halt: <b id="st-h">0</b>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+const $ = function(id){ return document.getElementById(id); };
+
+// ============================================================
+// MODULE — die Abschnitte
+// ============================================================
+const MODULE = [
+  {
+    id: 'tor',
+    name: 'tor',
+    was: 'eintritt · willkommen',
+    frage: 'Willst du wirklich eintreten?',
+    tat: 'einatmen. tür öffnen. langsam.'
+  },
+  {
+    id: 'nefes',
+    name: 'nefes',
+    was: 'atem · takt',
+    frage: 'Atmest du?',
+    tat: '4 sekunden ein. 4 sekunden aus. nichts weiter.'
+  },
+  {
+    id: 'hava',
+    name: 'hava',
+    was: 'luft · rechnen',
+    frage: 'Rechnest du — oder lässt du rechnen?',
+    tat: 'Nicht du rechnest. Die Luft rechnet. Du schaust zu.'
+  },
+  {
+    id: 'inboot',
+    name: 'inBOOT',
+    was: 'boot · grenze · heilung',
+    frage: 'Bist du bereit zu booten?',
+    tat: 'Setz dich. Nichts tun. 2 minuten.'
+  },
+  {
+    id: 'uno',
+    name: 'UNO',
+    was: 'anker · mitte',
+    frage: 'Hältst du die Mitte?',
+    tat: 'Zähl 3 atemzüge. Dann bist du da.'
+  },
+  {
+    id: 'einigung',
+    name: 'einigung',
+    was: 'einigung · dank',
+    frage: 'Willst du dich einigen?',
+    tat: 'Sag danke. Egal wem. Egal wofür.'
+  }
+];
+
+// ============================================================
+// WELCOME — der Führer
+// ============================================================
+const welcome = {
+  aktuell: null,
+  antworten: { koerper: null, geist: null, zeit: null },
+
+  // ---- Module zeichnen ----
+  zeichnen: function(){
+    const box = $('module');
+    box.innerHTML = '';
+    let bereit = 0, halt = 0;
+    MODULE.forEach(function(m){
+      const el = document.createElement('div');
+      el.className = 'modul grau';
+      el.setAttribute('data-id', m.id);
+      el.innerHTML =
+        '<div class="licht"></div>' +
+        '<div class="info">' +
+          '<div class="name">' + m.name + '</div>' +
+          '<div class="was">' + m.was + '</div>' +
+        '</div>' +
+        '<div class="status">?</div>';
+      el.addEventListener('click', function(){
+        welcome.oeffne(m.id);
+      });
+      box.appendChild(el);
+    });
+    $('st-m').textContent = MODULE.length;
+    $('st-b').textContent = bereit;
+    $('st-h').textContent = halt;
+  },
+
+  // ---- Welcome öffnen ----
+  oeffne: function(id){
+    const m = MODULE.find(function(x){ return x.id === id; });
+    if(!m) return;
+    welcome.aktuell = id;
+    welcome.antworten = { koerper: null, geist: null, zeit: null };
+
+    $('w-kopf').textContent = 'willkommen bei · ' + m.name;
+    $('welcome').classList.add('aktiv');
+    $('ergebnis').classList.remove('aktiv');
+
+    // alle Buttons zurücksetzen
+    document.querySelectorAll('.skala button').forEach(function(b){
+      b.classList.remove('aktiv');
+    });
+
+    // Scroll
+    $('welcome').scrollIntoView({ behavior:'smooth', block:'start' });
+  },
+
+  // ---- Prüfen ----
+  pruefen: function(){
+    const a = welcome.antworten;
+    if(a.koerper === null || a.geist === null || a.zeit === null){
+      alert('3 antworten bitte. alle.');
+      return;
+    }
+
+    const summe = a.koerper + a.geist + a.zeit;
+    // summe: 0..6
+    let farbe = 'rot';
+    if(summe >= 5) farbe = 'gruen';
+    else if(summe >= 3) farbe = 'gelb';
+    else farbe = 'rot';
+
+    const m = MODULE.find(function(x){ return x.id === welcome.aktuell; });
+
+    // Modul einfärben
+    const el = document.querySelector('.modul[data-id="'+welcome.aktuell+'"]');
+    if(el){
+      el.classList.remove('grau', 'gruen', 'gelb', 'rot');
+      el.classList.add(farbe);
+      el.querySelector('.status').textContent =
+        farbe === 'gruen' ? 'grün' :
+        farbe === 'gelb'  ? 'gelb' : 'rot';
+    }
+
+    // Ergebnis-Panel
+    const e = $('ergebnis');
+    e.className = 'aktiv ' + farbe;
+    $('e-kopf').textContent =
+      farbe === 'gruen' ? '🟢 grün · eintreten' :
+      farbe === 'gelb'  ? '🟡 gelb · vorsichtig' :
+                          '🔴 rot · halt';
+
+    $('e-frage').textContent = '„' + m.frage + '"';
+
+    let text = '';
+    if(farbe === 'gruen'){
+      text =
+        'Dein Körper: ' + ['müde','mittel','wach'][a.koerper] + '. ' +
+        'Dein Geist: ' + ['laut','ruhig','klar'][a.geist] + '. ' +
+        'Deine Zeit: ' + ['knapp','geht','offen'][a.zeit] + '. ' +
+        '<br><br>' +
+        'Du bist bereit. Du darfst eintreten. ' +
+        '<b>Nicht müssen — dürfen.</b>';
+    } else if(farbe === 'gelb'){
+      text =
+        'Dein Körper: ' + ['müde','mittel','wach'][a.koerper] + '. ' +
+        'Dein Geist: ' + ['laut','ruhig','klar'][a.geist] + '. ' +
+        'Deine Zeit: ' + ['knapp','geht','offen'][a.zeit] + '. ' +
+        '<br><br>' +
+        'Es geht — aber nicht ganz. ' +
+        'Vielleicht erst atmen. Dann eintreten. ' +
+        '<b>Du entscheidest.</b>';
+    } else {
+      text =
+        'Dein Körper: ' + ['müde','mittel','wach'][a.koerper] + '. ' +
+        'Dein Geist: ' + ['laut','ruhig','klar'][a.geist] + '. ' +
+        'Deine Zeit: ' + ['knapp','geht','offen'][a.zeit] + '. ' +
+        '<br><br>' +
+        '<b>Nicht jetzt.</b> Nicht weil du schwach bist. ' +
+        'Sondern weil dieser Abschnitt zu viel wäre. ' +
+        'Komm wieder, wenn du voller bist.';
+    }
+    $('e-text').innerHTML = text;
+    $('e-tat').innerHTML =
+      '<b>was machst du mit dir?</b><br>' + m.tat;
+
+    e.scrollIntoView({ behavior:'smooth', block:'start' });
+
+    // Status
+    welcome.zahlenAktualisieren();
+  },
+
+  // ---- zahlen ----
+  zahlenAktualisieren: function(){
+    let bereit = 0, halt = 0;
+    document.querySelectorAll('.modul').forEach(function(el){
+      if(el.classList.contains('gruen')) bereit++;
+      if(el.classList.contains('rot')) halt++;
+    });
+    $('st-b').textContent = bereit;
+    $('st-h').textContent = halt;
+  },
+
+  // ---- zurück ----
+  zurueck: function(){
+    $('welcome').classList.remove('aktiv');
+    $('ergebnis').classList.remove('aktiv');
+    $('module').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+};
+
+// ============================================================
+// SKALA-KLICKS
+// ============================================================
+document.querySelectorAll('.skala').forEach(function(skala){
+  const frage = skala.getAttribute('data-frage');
+  skala.querySelectorAll('button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      skala.querySelectorAll('button').forEach(function(b){
+        b.classList.remove('aktiv');
+      });
+      btn.classList.add('aktiv');
+      welcome.antworten[frage] = parseInt(btn.getAttribute('data-w'), 10);
+    });
+  });
+});
+
+// ============================================================
+// START
+// ============================================================
+window.welcome = welcome;
+welcome.zeichnen();
+
+})();
+</script>
+</body>
+</html>
