@@ -3,128 +3,198 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>nefes · rehber · führend</title>
+<title>nefes · rehber · 3 → 9 → 81 → 3</title>
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:#05050c;color:#eee;
             font-family:monospace;overflow:hidden}
-  #buehne{position:fixed;inset:0;z-index:0}
-  #buehne iframe{width:100%;height:100%;border:none;background:#000}
 
-  #fuehrung{
-    position:fixed;top:16px;left:16px;width:280px;
-    background:rgba(5,5,12,0.92);border:1px solid #1a3a2a;
-    border-radius:6px;padding:14px;backdrop-filter:blur(4px);
-    max-height:calc(100vh - 32px);overflow-y:auto;z-index:10
-  }
-  #fuehrung h1{color:#ffcc44;font-size:15px;margin:0 0 2px;
-               font-weight:normal;letter-spacing:2px}
-  #fuehrung .hauch{color:#5fc8ff;font-size:10px;margin-bottom:12px}
-  #fuehrung .hauch .maya{color:#00ffaa}
-  #fuehrung .hauch .inka{color:#ff0066}
+  #buehne{position:fixed;inset:0;display:flex;
+          flex-direction:column;align-items:center;
+          justify-content:center;padding:20px}
 
-  .modul{
-    display:block;padding:9px 11px;margin:4px 0;
-    background:rgba(255,255,255,0.02);border:1px solid #1a1a2a;
-    border-left:3px solid #1a1a2a;border-radius:0 4px 4px 0;
-    cursor:pointer;transition:all .2s;color:#eee;font-size:12px
-  }
-  .modul:hover{border-left-color:#00ffaa;
-               background:rgba(0,255,170,0.04);padding-left:15px}
-  .modul.aktiv{border-left-color:#ffcc44;
-               background:rgba(255,204,68,0.06)}
-  .modul .name{color:#ffcc44;font-weight:bold;letter-spacing:1px}
-  .modul .was{color:#888;font-size:10px;margin-top:2px}
-  .modul .pfad{color:#555;font-size:9px;margin-top:1px}
+  #kopf{text-align:center;margin-bottom:20px}
+  #kopf h1{color:#ffcc44;font-size:16px;margin:0 0 4px;
+           font-weight:normal;letter-spacing:2px}
+  #kopf .hauch{color:#5fc8ff;font-size:10px}
+  #kopf .hauch .maya{color:#00ffaa}
+  #kopf .hauch .inka{color:#ff0066}
 
-  #werkzeug{
-    position:fixed;bottom:16px;left:16px;width:280px;
-    background:rgba(5,5,12,0.92);border:1px solid #1a3a2a;
-    border-radius:6px;padding:12px;backdrop-filter:blur(4px);z-index:10
+  #stufen{display:flex;gap:10px;margin-bottom:24px}
+  .stufe{
+    padding:6px 16px;background:rgba(255,255,255,0.02);
+    border:1px solid #1a1a2a;border-radius:20px;
+    color:#555;font-size:11px;letter-spacing:1px;
+    transition:all .3s;cursor:pointer
   }
-  #werkzeug .titel{color:#5fc8ff;font-size:10px;
-                    letter-spacing:1px;margin-bottom:8px}
+  .stufe:hover{border-color:#5fc8ff;color:#5fc8ff}
+  .stufe.aktiv{border-color:#ffcc44;color:#ffcc44;
+               background:rgba(255,204,68,0.08)}
+  .stufe.passiert{border-color:#00ffaa;color:#00ffaa;
+                  background:rgba(0,255,170,0.05)}
+
+  #feld{
+    width:100%;max-width:720px;min-height:340px;
+    background:rgba(5,5,12,0.7);border:1px solid #1a3a2a;
+    border-radius:8px;padding:24px;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    position:relative;overflow:hidden
+  }
+
+  /* 3 · Drei Stimmen */
+  .drei{display:flex;gap:32px;justify-content:center;
+        flex-wrap:wrap}
+  .stimme{
+    width:120px;height:120px;border-radius:50%;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    border:2px solid #1a1a2a;cursor:pointer;
+    transition:all .3s;position:relative
+  }
+  .stimme:hover{transform:scale(1.05)}
+  .stimme.maya{border-color:#00ffaa;color:#00ffaa;
+               box-shadow:0 0 20px rgba(0,255,170,0.15)}
+  .stimme.inka{border-color:#ff0066;color:#ff0066;
+               box-shadow:0 0 20px rgba(255,0,102,0.15)}
+  .stimme.sen{border-color:#ffcc44;color:#ffcc44;
+              box-shadow:0 0 20px rgba(255,204,68,0.15)}
+  .stimme .ad{font-size:14px;font-weight:bold;letter-spacing:1px}
+  .stimme .rol{font-size:9px;color:#888;margin-top:4px}
+  .stimme .nokta{position:absolute;bottom:8px;font-size:8px;color:#555}
+
+  /* 9 · Neun Dialoge */
+  .neun{
+    display:grid;grid-template-columns:repeat(3,1fr);
+    gap:10px;width:100%
+  }
+  .dialog{
+    padding:12px;background:rgba(255,255,255,0.02);
+    border:1px solid #1a1a2a;border-radius:6px;
+    font-size:11px;transition:all .2s;cursor:pointer;
+    text-align:center
+  }
+  .dialog:hover{border-color:#00ffaa;
+                background:rgba(0,255,170,0.04)}
+  .dialog .paar{color:#ffcc44;letter-spacing:1px}
+  .dialog .nr{color:#555;font-size:9px;margin-top:3px}
+  .dialog .klang{color:#5fc8ff;font-size:9px;margin-top:3px}
+
+  /* 81 · Das Netz */
+  .netz{
+    display:grid;grid-template-columns:repeat(9,1fr);
+    gap:3px;width:100%;max-width:520px
+  }
+  .knoten{
+    aspect-ratio:1;background:rgba(255,255,255,0.02);
+    border:1px solid #1a1a2a;border-radius:2px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:8px;color:#555;cursor:pointer;
+    transition:all .15s
+  }
+  .knoten:hover{background:rgba(0,255,170,0.1);
+                border-color:#00ffaa;color:#00ffaa;
+                transform:scale(1.2);z-index:2}
+  .knoten.maya{border-color:#0a3a2a}
+  .knoten.inka{border-color:#3a0a1a}
+  .knoten.sen{border-color:#3a2a0a}
+
+  /* Rückkehr */
+  .rueckkehr{text-align:center}
+  .rueckkehr .kreis{
+    width:160px;height:160px;border-radius:50%;
+    border:1px dashed #ffcc44;margin:0 auto 20px;
+    display:flex;align-items:center;justify-content:center;
+    animation:dreh 12s linear infinite
+  }
+  @keyframes dreh{to{transform:rotate(360deg)}}
+  .rueckkehr .kreis .in{
+    color:#ffcc44;font-size:28px;
+    animation:gegendreh 12s linear infinite
+  }
+  @keyframes gegendreh{to{transform:rotate(-360deg)}}
+  .rueckkehr h2{color:#ffcc44;font-weight:normal;
+                font-size:14px;letter-spacing:2px;
+                margin:0 0 8px}
+  .rueckkehr p{color:#888;font-size:11px;
+               line-height:1.7;margin:0}
+
+  /* Steuerung */
+  #steuerung{
+    position:fixed;bottom:20px;left:50%;
+    transform:translateX(-50%);
+    display:flex;gap:8px;z-index:10
+  }
   .knopf{
-    padding:7px 12px;margin:3px 2px;background:rgba(0,255,170,0.05);
+    padding:10px 20px;background:rgba(0,255,170,0.05);
     color:#00ffaa;border:1px solid #00ffaa;border-radius:4px;
-    cursor:pointer;font-family:monospace;font-size:11px;
-    transition:all .2s
+    cursor:pointer;font-family:monospace;font-size:12px;
+    letter-spacing:1px;transition:all .2s
   }
-  .knopf:hover{background:rgba(0,255,170,0.15)}
+  .knopf:hover{background:rgba(0,255,170,0.15);
+               letter-spacing:2px}
   .knopf.warn{color:#ff0066;border-color:#ff0066;
               background:rgba(255,0,102,0.05)}
   .knopf.warn:hover{background:rgba(255,0,102,0.15)}
-  .knopf.aktiv{background:rgba(255,204,68,0.15);border-color:#ffcc44;color:#ffcc44}
-
-  #editor{
-    position:fixed;top:16px;right:16px;width:380px;
-    background:rgba(5,5,12,0.95);border:1px solid #1a3a2a;
-    border-radius:6px;padding:12px;backdrop-filter:blur(4px);
-    max-height:calc(100vh - 32px);display:none;z-index:20;
-    flex-direction:column
-  }
-  #editor.aktiv{display:flex}
-  #editor .kopf{display:flex;justify-content:space-between;
-                align-items:center;margin-bottom:8px}
-  #editor .kopf .pfad{color:#ffcc44;font-size:11px}
-  #editor .kopf .schliessen{color:#ff0066;cursor:pointer;font-size:16px;
-                            padding:0 4px}
-  #editor textarea{
-    flex:1;min-height:300px;background:#020208;color:#00ffaa;
-    border:1px solid #1a1a2a;border-radius:4px;padding:8px;
-    font-family:monospace;font-size:11px;line-height:1.5;
-    resize:vertical;white-space:pre;overflow:auto
-  }
-  #editor .fuss{margin-top:8px;display:flex;gap:4px}
 
   #status{
-    position:fixed;bottom:16px;right:16px;
+    position:fixed;bottom:20px;right:20px;
     padding:8px 14px;background:rgba(5,5,12,0.85);
     border:1px solid #1a1a2a;border-radius:4px;
-    font-size:10px;line-height:1.6;color:#666;z-index:10
+    font-size:10px;line-height:1.6;color:#666
   }
   #status b{color:#ffcc44}
   #status .ok{color:#00ffaa}
   #status .no{color:#ff0066}
+
+  #info{
+    position:fixed;top:20px;right:20px;
+    padding:8px 14px;background:rgba(5,5,12,0.85);
+    border:1px solid #1a1a2a;border-radius:4px;
+    font-size:10px;line-height:1.6;color:#666;
+    max-width:220px
+  }
+  #info b{color:#5fc8ff}
 </style>
 </head>
 <body>
 
 <div id="buehne">
-  <iframe id="rahmen" src="olay.html"></iframe>
+
+  <div id="kopf">
+    <h1>nefes · rehber</h1>
+    <div class="hauch">
+      <span class="maya">maya · ik'</span> ·
+      <span class="inka">inka · samay</span> · türkçe
+    </div>
+  </div>
+
+  <div id="stufen">
+    <div class="stufe" data-s="3">3</div>
+    <div class="stufe" data-s="9">9</div>
+    <div class="stufe" data-s="81">81</div>
+    <div class="stufe" data-s="rueck">↺ 3</div>
+  </div>
+
+  <div id="feld"></div>
+
 </div>
 
-<div id="fuehrung">
-  <h1>nefes · rehber</h1>
-  <div class="hauch">
-    <span class="maya">maya · ik'</span> ·
-    <span class="inka">inka · samay</span> · türkçe
-  </div>
-  <div id="modulliste"></div>
+<div id="steuerung">
+  <button class="knopf" onclick="rehber.zurueck()">← geri</button>
+  <button class="knopf" onclick="rehber.weiter()">ileri →</button>
+  <button class="knopf warn" onclick="rehber.reloop()">↺ reloop</button>
 </div>
 
-<div id="werkzeug">
-  <div class="titel">werkzeug · araç</div>
-  <button class="knopf" onclick="rehber.laden()">yükle · laden</button>
-  <button class="knopf" onclick="rehber.ausfuehren()">çalıştır · run</button>
-  <button class="knopf" onclick="rehber.bearbeiten()">düzenle · edit</button>
-  <button class="knopf warn" onclick="rehber.zurueck()">← geri · zurück</button>
-</div>
-
-<div id="editor">
-  <div class="kopf">
-    <span class="pfad" id="ed-pfad">–</span>
-    <span class="schliessen" onclick="rehber.editorZu()">×</span>
-  </div>
-  <textarea id="ed-text" spellcheck="false"></textarea>
-  <div class="fuss">
-    <button class="knopf" onclick="rehber.speichern()">kaydet · speichern</button>
-    <button class="knopf warn" onclick="rehber.editorZu()">iptal · abbrechen</button>
-  </div>
+<div id="info">
+  <b>3</b> · ses · Stimmen<br>
+  <b>9</b> · diyalog · Dialoge<br>
+  <b>81</b> · ağ · Netz<br>
+  <b>↺ 3</b> · dönüş · Rückkehr
 </div>
 
 <div id="status">
-  modul: <b id="st-m">–</b> ·
+  stufe: <b id="st-s">3</b> ·
   durum: <b id="st-d" class="ok">hazır</b>
 </div>
 
@@ -132,58 +202,126 @@
 (function(){
 'use strict';
 
-// ============================================================
-// MODULLISTE — die Dateien im Repository
-// ============================================================
-// Jedes Modul: id (Dateiname), name, was (Beschreibung), maya, inka
-const MODULE = [
-  { id:'olay.html',  name:'olay',  was:'Terminal · bash',        maya:'ik\'',   inka:'samay' },
-  { id:'bir.html',   name:'bir',   was:'Der Punkt. Atmet.',      maya:'hun',    inka:'huk' },
-  { id:'birden.js',  name:'birden',was:'Sequenzielles Dasein',   maya:'—',      inka:'—' },
-  { id:'iki.js',     name:'iki',   was:'Das Gegenstück',         maya:'ka',     inka:'iskay' },
-  { id:'uc.js',      name:'üç',    was:'Der Raum. Beziehung.',   maya:'ox',     inka:'kimsa' },
-  { id:'ki.js',      name:'ki',    was:'Klärung durch Kombination', maya:'hun/ka/ox', inka:'huk/iskay/kimsa' },
-  { id:'klar.js',    name:'klar',  was:'Klärung in drei Sprachen', maya:'ma\'/hun/ka', inka:'mana/huk/iskay' },
-  { id:'dur.js',     name:'dur',   was:'Der Halt. Ursache→Wirkung', maya:'kan', inka:'sayay' },
-  { id:'ikilem.js',  name:'ikilem',was:'Das Dilemma. Löst auf.', maya:'kan',    inka:'tawa' },
-  { id:'bash.html',  name:'bash',  was:'Küp · Atom · Reaktion',  maya:'hun·ka·ox·kan', inka:'huk·iskay·kimsa·tawa' },
-  { id:'is.html',    name:'is',    was:'Küp · çalışan',          maya:'ik\'',   inka:'samay' }
+const feld = document.getElementById('feld');
+const stS = document.getElementById('st-s');
+const stD = document.getElementById('st-d');
+
+const STIMMEN = [
+  { id:'maya', ad:'maya', rol:'ik\' · içeride kalır', klasse:'maya' },
+  { id:'inka', ad:'inka', rol:'samay · dışarı yayılır', klasse:'inka' },
+  { id:'sen',  ad:'sen',  rol:'buradasın · du bist hier', klasse:'sen' }
 ];
 
-// ============================================================
-// ZUSTAND
-// ============================================================
-const zustand = {
-  aktiv: 'olay.html',
-  quelle: '',
-  pfad: ''
-};
-
-const rahmen = document.getElementById('rahmen');
-const liste = document.getElementById('modulliste');
-const stM = document.getElementById('st-m');
-const stD = document.getElementById('st-d');
-const editor = document.getElementById('editor');
-const edText = document.getElementById('ed-text');
-const edPfad = document.getElementById('ed-pfad');
+const STUFEN = ['3', '9', '81', 'rueck'];
+let aktuell = 0;
 
 // ============================================================
-// MODULLISTE BAUEN
+// STUFE 3 — Drei Stimmen
 // ============================================================
-function baueListe(){
-  liste.innerHTML = '';
-  MODULE.forEach(function(m){
-    const el = document.createElement('div');
-    el.className = 'modul' + (m.id === zustand.aktiv ? ' aktiv' : '');
-    el.innerHTML =
-      '<div class="name">' + m.name + '</div>' +
-      '<div class="was">' + m.was + '</div>' +
-      '<div class="pfad">' + m.id + '</div>';
-    el.addEventListener('click', function(){
-      rehber.laden(m.id);
-    });
-    liste.appendChild(el);
+function zeig3(){
+  let html = '<div class="drei">';
+  STIMMEN.forEach(function(s, i){
+    html += '<div class="stimme '+s.klasse+'" '+
+            'onclick="rehber.stimmeKlick(\''+s.id+'\')">'+
+            '<div class="ad">'+s.ad+'</div>'+
+            '<div class="rol">'+s.rol+'</div>'+
+            '<div class="nokta">'+(i+1)+'/3</div>'+
+            '</div>';
   });
+  html += '</div>';
+  html += '<div style="margin-top:28px;color:#555;'+
+          'font-size:10px;text-align:center;line-height:1.8">'+
+          'bir nefes · ein Atem<br>'+
+          'üç ses · drei Stimmen<br>'+
+          '<span style="color:#888">ileri → ile 9\'a geç</span>'+
+          '</div>';
+  feld.innerHTML = html;
+  stS.textContent = '3';
+  stD.textContent = 'üç ses';
+  stD.className = 'ok';
+}
+
+// ============================================================
+// STUFE 9 — Drei mal Drei
+// ============================================================
+function zeig9(){
+  let html = '<div class="neun">';
+  let nr = 1;
+  STIMMEN.forEach(function(a){
+    STIMMEN.forEach(function(b){
+      const klasse = a.klasse;
+      html += '<div class="dialog" '+
+              'onclick="rehber.dialogKlick('+nr+',\''+a.id+'\',\''+b.id+'\')">'+
+              '<div class="paar">'+a.ad+' × '+b.ad+'</div>'+
+              '<div class="nr">'+nr+'/9</div>'+
+              '<div class="klang">'+
+              (a.id===b.id?'aynı · gleich':'farklı · verschieden')+
+              '</div>'+
+              '</div>';
+      nr++;
+    });
+  });
+  html += '</div>';
+  html += '<div style="margin-top:20px;color:#555;'+
+          'font-size:10px;text-align:center">'+
+          'her ses her sesle konuşur · 9 diyalog'+
+          '</div>';
+  feld.innerHTML = html;
+  stS.textContent = '9';
+  stD.textContent = 'dokuz diyalog';
+  stD.className = 'ok';
+}
+
+// ============================================================
+// STUFE 81 — Neun mal Neun
+// ============================================================
+function zeig81(){
+  const V = ['maya', 'inka', 'sen'];
+  let html = '<div class="netz">';
+  for(let i = 0; i < 81; i++){
+    const a = V[i % 3];
+    const b = V[Math.floor(i / 3) % 3];
+    const klasse = a;
+    html += '<div class="knoten '+klasse+'" '+
+            'onclick="rehber.knotenKlick('+(i+1)+',\''+a+'\',\''+b+'\')" '+
+            'title="'+(i+1)+': '+a+' × '+b+'">'+
+            (i+1)+
+            '</div>';
+  }
+  html += '</div>';
+  html += '<div style="margin-top:20px;color:#555;'+
+          'font-size:10px;text-align:center;line-height:1.8">'+
+          '9 × 9 = 81 · tam ağ · volles Netz<br>'+
+          '<span style="color:#888">her kutu bir diyalog · '+
+          'jedes Feld ein Dialog</span>'+
+          '</div>';
+  feld.innerHTML = html;
+  stS.textContent = '81';
+  stD.textContent = 'tam ağ';
+  stD.className = 'ok';
+}
+
+// ============================================================
+// STUFE RÜCKKEHR — Reloop
+// ============================================================
+function zeigRueck(){
+  feld.innerHTML =
+    '<div class="rueckkehr">'+
+    '<div class="kreis"><div class="in">↺</div></div>'+
+    '<h2>3 · geri dönüş</h2>'+
+    '<p>'+
+    '3 → 9 → 81 → 3<br>'+
+    'abr · yok · kein Abbruch<br>'+
+    'reloop · evet · ja<br><br>'+
+    '<span style="color:#5fc8ff">'+
+    'aynı nefes. aynı küp. yeniden başlar.<br>'+
+    'derselbe Atem. derselbe Würfel. beginnt neu.'+
+    '</span>'+
+    '</p>'+
+    '</div>';
+  stS.textContent = '↺ 3';
+  stD.textContent = 'reloop';
+  stD.className = 'ok';
 }
 
 // ============================================================
@@ -191,121 +329,88 @@ function baueListe(){
 // ============================================================
 const rehber = {
 
-  // ---- laden ----
-  laden: function(id){
-    if(id) zustand.aktiv = id;
-    const m = MODULE.find(function(x){ return x.id === zustand.aktiv; });
-    if(!m) return;
-    rahmen.src = m.id;
-    stM.textContent = m.name;
-    stD.textContent = 'yüklendi';
-    stD.className = 'ok';
-    // Liste aktualisieren
-    document.querySelectorAll('.modul').forEach(function(el){
-      el.classList.remove('aktiv');
+  zeig: function(stufe){
+    const s = STUFEN[stufe];
+    document.querySelectorAll('.stufe').forEach(function(el){
+      el.classList.remove('aktiv', 'passiert');
     });
-    baueListe();
+    document.querySelectorAll('.stufe').forEach(function(el, i){
+      if(i < stufe) el.classList.add('passiert');
+      if(i === stufe) el.classList.add('aktiv');
+    });
+    if(s === '3')    zeig3();
+    if(s === '9')    zeig9();
+    if(s === '81')   zeig81();
+    if(s === 'rueck') zeigRueck();
+    aktuell = stufe;
   },
 
-  // ---- ausführen ----
-  ausfuehren: function(){
-    // Das iframe neu laden → führt das Modul aus
-    const m = MODULE.find(function(x){ return x.id === zustand.aktiv; });
-    if(!m) return;
-    rahmen.src = m.id + '?t=' + Date.now();
-    stD.textContent = 'çalışıyor';
-    stD.className = 'ok';
-  },
-
-  // ---- bearbeiten ----
-  bearbeiten: function(){
-    const m = MODULE.find(function(x){ return x.id === zustand.aktiv; });
-    if(!m) return;
-    // Nur .js und .html können bearbeitet werden
-    if(!/\.(js|html)$/.test(m.id)){
-      stD.textContent = 'bu dosya düzenlenemez';
+  weiter: function(){
+    if(aktuell < STUFEN.length - 1){
+      rehber.zeig(aktuell + 1);
+    } else {
+      stD.textContent = 'son · ende';
       stD.className = 'no';
-      return;
     }
-    // Quelltext laden
-    fetch(m.id)
-      .then(function(r){ return r.text(); })
-      .then(function(t){
-        zustand.quelle = t;
-        zustand.pfad = m.id;
-        edText.value = t;
-        edPfad.textContent = m.id;
-        editor.classList.add('aktiv');
-        stD.textContent = 'düzenleniyor';
-        stD.className = 'ok';
-      })
-      .catch(function(){
-        stD.textContent = 'yüklenemedi';
-        stD.className = 'no';
-      });
   },
 
-  // ---- speichern ----
-  speichern: function(){
-    // In dieser Version: nur anzeigen, dass es "gespeichert" wurde
-    // (Ohne Server kann nicht wirklich geschrieben werden.)
-    // Der Nutzer kann den Text kopieren.
-    zustand.quelle = edText.value;
-    stD.textContent = 'kaydedildi (kopyala)';
-    stD.className = 'ok';
-    // In die Zwischenablage kopieren
-    try {
-      navigator.clipboard.writeText(edText.value);
-    } catch(e){}
-  },
-
-  // ---- editor zu ----
-  editorZu: function(){
-    editor.classList.remove('aktiv');
-    stD.textContent = 'hazır';
-    stD.className = 'ok';
-  },
-
-  // ---- zurück ----
   zurueck: function(){
-    // Zur Startseite (olay.html)
-    zustand.aktiv = 'olay.html';
-    rahmen.src = 'olay.html';
-    stM.textContent = 'olay';
-    stD.textContent = 'başlangıç';
+    if(aktuell > 0){
+      rehber.zeig(aktuell - 1);
+    }
+  },
+
+  reloop: function(){
+    rehber.zeig(0);
+    stD.textContent = 'reloop · yeniden';
     stD.className = 'ok';
-    baueListe();
+  },
+
+  // ---- Klicks auf Inhalte ----
+  stimmeKlick: function(id){
+    const s = STIMMEN.find(function(x){ return x.id === id; });
+    if(!s) return;
+    stD.textContent = s.ad + ' · ' + s.rol;
+    stD.className = 'ok';
+  },
+
+  dialogKlick: function(nr, a, b){
+    stD.textContent = nr + '/9 · ' + a + ' × ' + b;
+    stD.className = 'ok';
+  },
+
+  knotenKlick: function(nr, a, b){
+    stD.textContent = nr + '/81 · ' + a + ' × ' + b;
+    stD.className = 'ok';
   }
 };
 
 window.rehber = rehber;
 
-// ============================================================
-// TASTATUR — sanfte Führung
-// ============================================================
+// ---- Stufen-Klick ----
+document.querySelectorAll('.stufe').forEach(function(el){
+  el.addEventListener('click', function(){
+    const s = el.getAttribute('data-s');
+    const idx = STUFEN.indexOf(s);
+    if(idx >= 0) rehber.zeig(idx);
+  });
+});
+
+// ---- Tastatur ----
 document.addEventListener('keydown', function(e){
-  // ESC: Editor schließen
-  if(e.key === 'Escape'){
-    rehber.editorZu();
-    return;
-  }
-  // Pfeil hoch/runter: Modul wechseln
-  if(e.key === 'ArrowUp' || e.key === 'ArrowDown'){
-    const idx = MODULE.findIndex(function(m){ return m.id === zustand.aktiv; });
-    if(idx < 0) return;
-    let next = idx + (e.key === 'ArrowDown' ? 1 : -1);
-    if(next < 0) next = MODULE.length - 1;
-    if(next >= MODULE.length) next = 0;
-    rehber.laden(MODULE[next].id);
-    e.preventDefault();
-  }
+  if(e.key === 'ArrowRight') { rehber.weiter(); e.preventDefault(); }
+  if(e.key === 'ArrowLeft')  { rehber.zurueck(); e.preventDefault(); }
+  if(e.key === 'r' || e.key === 'R') { rehber.reloop(); }
+  if(e.key === '1') rehber.zeig(0);
+  if(e.key === '2') rehber.zeig(1);
+  if(e.key === '3') rehber.zeig(2);
+  if(e.key === '4') rehber.zeig(3);
 });
 
 // ============================================================
 // START
 // ============================================================
-baueListe();
-rehber.laden('olay.html');
+rehber.zeig(0);
 
 })();
 </script>
