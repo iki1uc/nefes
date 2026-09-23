@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>nefes · rehber · führend</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#05050c;color:#eee;
+            font-family:monospace;overflow:hidden}
+  #buehne{position:fixed;inset:0;z-index:0}
+  #buehne iframe{width:100%;height:100%;border:none;background:#000}
+
+  #fuehrung{
+    position:fixed;top:16px;left:16px;width:280px;
+    background:rgba(5,5,12,0.92);border:1px solid #1a3a2a;
+    border-radius:6px;padding:14px;backdrop-filter:blur(4px);
+    max-height:calc(100vh - 32px);overflow-y:auto;z-index:10
+  }
+  #fuehrung h1{color:#ffcc44;font-size:15px;margin:0 0 2px;
+               font-weight:normal;letter-spacing:2px}
+  #fuehrung .hauch{color:#5fc8ff;font-size:10px;margin-bottom:12px}
+  #fuehrung .hauch .maya{color:#00ffaa}
+  #fuehrung .hauch .inka{color:#ff0066}
+
+  .modul{
+    display:block;padding:9px 11px;margin:4px 0;
+    background:rgba(255,255,255,0.02);border:1px solid #1a1a2a;
+    border-left:3px solid #1a1a2a;border-radius:0 4px 4px 0;
+    cursor:pointer;transition:all .2s;color:#eee;font-size:12px
+  }
+  .modul:hover{border-left-color:#00ffaa;
+               background:rgba(0,255,170,0.04);padding-left:15px}
+  .modul.aktiv{border-left-color:#ffcc44;
+               background:rgba(255,204,68,0.06)}
+  .modul .name{color:#ffcc44;font-weight:bold;letter-spacing:1px}
+  .modul .was{color:#888;font-size:10px;margin-top:2px}
+  .modul .pfad{color:#555;font-size:9px;margin-top:1px}
+
+  #werkzeug{
+    position:fixed;bottom:16px;left:16px;width:280px;
+    background:rgba(5,5,12,0.92);border:1px solid #1a3a2a;
+    border-radius:6px;padding:12px;backdrop-filter:blur(4px);z-index:10
+  }
+  #werkzeug .titel{color:#5fc8ff;font-size:10px;
+                    letter-spacing:1px;margin-bottom:8px}
+  .knopf{
+    padding:7px 12px;margin:3px 2px;background:rgba(0,255,170,0.05);
+    color:#00ffaa;border:1px solid #00ffaa;border-radius:4px;
+    cursor:pointer;font-family:monospace;font-size:11px;
+    transition:all .2s
+  }
+  .knopf:hover{background:rgba(0,255,170,0.15)}
+  .knopf.warn{color:#ff0066;border-color:#ff0066;
+              background:rgba(255,0,102,0.05)}
+  .knopf.warn:hover{background:rgba(255,0,102,0.15)}
+  .knopf.aktiv{background:rgba(255,204,68,0.15);border-color:#ffcc44;color:#ffcc44}
+
+  #editor{
+    position:fixed;top:16px;right:16px;width:380px;
+    background:rgba(5,5,12,0.95);border:1px solid #1a3a2a;
+    border-radius:6px;padding:12px;backdrop-filter:blur(4px);
+    max-height:calc(100vh - 32px);display:none;z-index:20;
+    flex-direction:column
+  }
+  #editor.aktiv{display:flex}
+  #editor .kopf{display:flex;justify-content:space-between;
+                align-items:center;margin-bottom:8px}
+  #editor .kopf .pfad{color:#ffcc44;font-size:11px}
+  #editor .kopf .schliessen{color:#ff0066;cursor:pointer;font-size:16px;
+                            padding:0 4px}
+  #editor textarea{
+    flex:1;min-height:300px;background:#020208;color:#00ffaa;
+    border:1px solid #1a1a2a;border-radius:4px;padding:8px;
+    font-family:monospace;font-size:11px;line-height:1.5;
+    resize:vertical;white-space:pre;overflow:auto
+  }
+  #editor .fuss{margin-top:8px;display:flex;gap:4px}
+
+  #status{
+    position:fixed;bottom:16px;right:16px;
+    padding:8px 14px;background:rgba(5,5,12,0.85);
+    border:1px solid #1a1a2a;border-radius:4px;
+    font-size:10px;line-height:1.6;color:#666;z-index:10
+  }
+  #status b{color:#ffcc44}
+  #status .ok{color:#00ffaa}
+  #status .no{color:#ff0066}
+</style>
+</head>
+<body>
+
+<div id="buehne">
+  <iframe id="rahmen" src="olay.html"></iframe>
+</div>
+
+<div id="fuehrung">
+  <h1>nefes · rehber</h1>
+  <div class="hauch">
+    <span class="maya">maya · ik'</span> ·
+    <span class="inka">inka · samay</span> · türkçe
+  </div>
+  <div id="modulliste"></div>
+</div>
+
+<div id="werkzeug">
+  <div class="titel">werkzeug · araç</div>
+  <button class="knopf" onclick="rehber.laden()">yükle · laden</button>
+  <button class="knopf" onclick="rehber.ausfuehren()">çalıştır · run</button>
+  <button class="knopf" onclick="rehber.bearbeiten()">düzenle · edit</button>
+  <button class="knopf warn" onclick="rehber.zurueck()">← geri · zurück</button>
+</div>
+
+<div id="editor">
+  <div class="kopf">
+    <span class="pfad" id="ed-pfad">–</span>
+    <span class="schliessen" onclick="rehber.editorZu()">×</span>
+  </div>
+  <textarea id="ed-text" spellcheck="false"></textarea>
+  <div class="fuss">
+    <button class="knopf" onclick="rehber.speichern()">kaydet · speichern</button>
+    <button class="knopf warn" onclick="rehber.editorZu()">iptal · abbrechen</button>
+  </div>
+</div>
+
+<div id="status">
+  modul: <b id="st-m">–</b> ·
+  durum: <b id="st-d" class="ok">hazır</b>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ============================================================
+// MODULLISTE — die Dateien im Repository
+// ============================================================
+// Jedes Modul: id (Dateiname), name, was (Beschreibung), maya, inka
+const MODULE = [
+  { id:'olay.html',  name:'olay',  was:'Terminal · bash',        maya:'ik\'',   inka:'samay' },
+  { id:'bir.html',   name:'bir',   was:'Der Punkt. Atmet.',      maya:'hun',    inka:'huk' },
+  { id:'birden.js',  name:'birden',was:'Sequenzielles Dasein',   maya:'—',      inka:'—' },
+  { id:'iki.js',     name:'iki',   was:'Das Gegenstück',         maya:'ka',     inka:'iskay' },
+  { id:'uc.js',      name:'üç',    was:'Der Raum. Beziehung.',   maya:'ox',     inka:'kimsa' },
+  { id:'ki.js',      name:'ki',    was:'Klärung durch Kombination', maya:'hun/ka/ox', inka:'huk/iskay/kimsa' },
+  { id:'klar.js',    name:'klar',  was:'Klärung in drei Sprachen', maya:'ma\'/hun/ka', inka:'mana/huk/iskay' },
+  { id:'dur.js',     name:'dur',   was:'Der Halt. Ursache→Wirkung', maya:'kan', inka:'sayay' },
+  { id:'ikilem.js',  name:'ikilem',was:'Das Dilemma. Löst auf.', maya:'kan',    inka:'tawa' },
+  { id:'bash.html',  name:'bash',  was:'Küp · Atom · Reaktion',  maya:'hun·ka·ox·kan', inka:'huk·iskay·kimsa·tawa' },
+  { id:'is.html',    name:'is',    was:'Küp · çalışan',          maya:'ik\'',   inka:'samay' }
+];
+
+// ============================================================
+// ZUSTAND
+// ============================================================
+const zustand = {
+  aktiv: 'olay.html',
+  quelle: '',
+  pfad: ''
+};
+
+const rahmen = document.getElementById('rahmen');
+const liste = document.getElementById('modulliste');
+const stM = document.getElementById('st-m');
+const stD = document.getElementById('st-d');
+const editor = document.getElementById('editor');
+const edText = document.getElementById('ed-text');
+const edPfad = document.getElementById('ed-pfad');
+
+// ============================================================
+// MODULLISTE BAUEN
+// ============================================================
+function baueListe(){
+  liste.innerHTML = '';
+  MODULE.forEach(function(m){
+    const el = document.createElement('div');
+    el.className = 'modul' + (m.id === zustand.aktiv ? ' aktiv' : '');
+    el.innerHTML =
+      '<div class="name">' + m.name + '</div>' +
+      '<div class="was">' + m.was + '</div>' +
+      '<div class="pfad">' + m.id + '</div>';
+    el.addEventListener('click', function(){
+      rehber.laden(m.id);
+    });
+    liste.appendChild(el);
+  });
+}
+
+// ============================================================
+// REHBER — die Führung
+// ============================================================
+const rehber = {
+
+  // ---- laden ----
+  laden: function(id){
+    if(id) zustand.aktiv = id;
+    const m = MODULE.find(function(x){ return x.id === zustand.aktiv; });
+    if(!m) return;
+    rahmen.src = m.id;
+    stM.textContent = m.name;
+    stD.textContent = 'yüklendi';
+    stD.className = 'ok';
+    // Liste aktualisieren
+    document.querySelectorAll('.modul').forEach(function(el){
+      el.classList.remove('aktiv');
+    });
+    baueListe();
+  },
+
+  // ---- ausführen ----
+  ausfuehren: function(){
+    // Das iframe neu laden → führt das Modul aus
+    const m = MODULE.find(function(x){ return x.id === zustand.aktiv; });
+    if(!m) return;
+    rahmen.src = m.id + '?t=' + Date.now();
+    stD.textContent = 'çalışıyor';
+    stD.className = 'ok';
+  },
+
+  // ---- bearbeiten ----
+  bearbeiten: function(){
+    const m = MODULE.find(function(x){ return x.id === zustand.aktiv; });
+    if(!m) return;
+    // Nur .js und .html können bearbeitet werden
+    if(!/\.(js|html)$/.test(m.id)){
+      stD.textContent = 'bu dosya düzenlenemez';
+      stD.className = 'no';
+      return;
+    }
+    // Quelltext laden
+    fetch(m.id)
+      .then(function(r){ return r.text(); })
+      .then(function(t){
+        zustand.quelle = t;
+        zustand.pfad = m.id;
+        edText.value = t;
+        edPfad.textContent = m.id;
+        editor.classList.add('aktiv');
+        stD.textContent = 'düzenleniyor';
+        stD.className = 'ok';
+      })
+      .catch(function(){
+        stD.textContent = 'yüklenemedi';
+        stD.className = 'no';
+      });
+  },
+
+  // ---- speichern ----
+  speichern: function(){
+    // In dieser Version: nur anzeigen, dass es "gespeichert" wurde
+    // (Ohne Server kann nicht wirklich geschrieben werden.)
+    // Der Nutzer kann den Text kopieren.
+    zustand.quelle = edText.value;
+    stD.textContent = 'kaydedildi (kopyala)';
+    stD.className = 'ok';
+    // In die Zwischenablage kopieren
+    try {
+      navigator.clipboard.writeText(edText.value);
+    } catch(e){}
+  },
+
+  // ---- editor zu ----
+  editorZu: function(){
+    editor.classList.remove('aktiv');
+    stD.textContent = 'hazır';
+    stD.className = 'ok';
+  },
+
+  // ---- zurück ----
+  zurueck: function(){
+    // Zur Startseite (olay.html)
+    zustand.aktiv = 'olay.html';
+    rahmen.src = 'olay.html';
+    stM.textContent = 'olay';
+    stD.textContent = 'başlangıç';
+    stD.className = 'ok';
+    baueListe();
+  }
+};
+
+window.rehber = rehber;
+
+// ============================================================
+// TASTATUR — sanfte Führung
+// ============================================================
+document.addEventListener('keydown', function(e){
+  // ESC: Editor schließen
+  if(e.key === 'Escape'){
+    rehber.editorZu();
+    return;
+  }
+  // Pfeil hoch/runter: Modul wechseln
+  if(e.key === 'ArrowUp' || e.key === 'ArrowDown'){
+    const idx = MODULE.findIndex(function(m){ return m.id === zustand.aktiv; });
+    if(idx < 0) return;
+    let next = idx + (e.key === 'ArrowDown' ? 1 : -1);
+    if(next < 0) next = MODULE.length - 1;
+    if(next >= MODULE.length) next = 0;
+    rehber.laden(MODULE[next].id);
+    e.preventDefault();
+  }
+});
+
+// ============================================================
+// START
+// ============================================================
+baueListe();
+rehber.laden('olay.html');
+
+})();
+</script>
+</body>
+</html>
