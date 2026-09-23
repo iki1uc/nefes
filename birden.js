@@ -1,73 +1,136 @@
-<canvas id="c"></canvas>
-<script>
-const c = document.getElementById('c');
-const ctx = c.getContext('2d');
+// birden.js — sequenzielles Dasein
+// Nach dem Muster von bir.html.
+// Zweite Existenz. Getrennt. Läuft weiter.
 
-// Passe die Größe des Canvas an das Fenster an (wichtig für Handys)
-function resize() {
+(function () {
+  'use strict';
+
+  // Sequenz: bir → birden
+  const SEQ = 2;
+  const HERKUNFT = 'bir.html';
+
+  // Zeit — mit Fallback für alte Handys
+  const now = () => (window.performance && performance.now) ? performance.now() : Date.now();
+  const raf = window.requestAnimationFrame || (cb => setTimeout(cb, 16));
+
+  // Sequenz-Zustand
+  const zustand = {
+    seq: SEQ,
+    herkunft: HERKUNFT,
+    start: now(),
+    klar: false,
+    schritte: 0
+  };
+
+  // Canvas vorbereiten — eigenes Element, nicht bir
+  function mount() {
+    if (document.getElementById('cb')) return;
+    const c = document.createElement('canvas');
+    c.id = 'cb';
+    c.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;background:#000';
+    document.body.appendChild(c);
+    return c;
+  }
+
+  const c = mount();
+  if (!c) return;
+  const ctx = c.getContext('2d');
+
+  function resize() {
     c.width = window.innerWidth;
     c.height = window.innerHeight;
-}
-window.addEventListener('resize', resize);
-resize();
+  }
+  window.addEventListener('resize', resize);
+  resize();
 
-// --- Konfiguration ---
-const totalDuration = 10; // Gesamtdauer des Countdowns in Sekunden
-const startTime = performance.now(); // Startzeitpunkt
+  // Sequenz: 3 Schritte nach bir
+  const SCHRITTE = ['atmen', 'ankern', 'klären'];
+  const DAUER = 3; // Sekunden pro Schritt
 
-function draw() {
-    // 1. Hintergrund zeichnen
+  function draw() {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, c.width, c.height);
 
-    // 2. Zeit berechnen
-    const now = performance.now();
-    const elapsed = (now - startTime) / 1000; // Vergangene Zeit in Sekunden
-    const remaining = Math.max(0, totalDuration - elapsed);
-    const progress = remaining / totalDuration; // 0 bis 1
+    const t = (now() - zustand.start) / 1000;
+    const gesamt = SCHRITTE.length * DAUER;
+    const rest = Math.max(0, gesamt - t);
+    const schrittIdx = Math.min(SCHRITTE.length - 1, Math.floor(t / DAUER));
+    const imSchritt = t - schrittIdx * DAUER;
+    const p = Math.min(1, imSchritt / DAUER);
 
-    // 3. Kreis als "Führung" zeichnen
-    const centerX = c.width / 2;
-    const centerY = c.height / 2;
-    const radius = Math.min(c.width, c.height) * 0.3;
+    const cx = c.width / 2;
+    const cy = c.height / 2;
+    const r = Math.min(c.width, c.height) * 0.3;
 
-    // Zeichne den Hintergrund-Kreis (optional)
+    // Hintergrund-Kreis
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    ctx.strokeStyle = '#333'; // Dunkelgrau für den "leeren" Teil
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = '#333';
     ctx.lineWidth = 20;
     ctx.stroke();
 
-    // Zeichne den sich füllenden Bogen (die Führung)
-    // Startwinkel: -90 Grad (oben), um im Uhrzeigersinn zu füllen
-    const startAngle = -Math.PI / 2;
-    // Endwinkel basierend auf dem Fortschritt
-    const endAngle = startAngle + (Math.PI * 2 * (1 - progress));
+    // Sequenzieller Bogen — füllt sich von 0 bis 1 pro Schritt
+    const s = -Math.PI / 2;
+    const e = s + Math.PI * 2 * p;
 
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-    ctx.strokeStyle = '#00ffaa'; // Deine "Nefes"-Farbe
+    ctx.arc(cx, cy, r, s, e);
+    ctx.strokeStyle = '#00ffaa';
     ctx.lineWidth = 20;
-    ctx.lineCap = 'round'; // Abgerundete Enden für einen weicheren Look
+    ctx.lineCap = 'round';
     ctx.stroke();
 
-    // 4. Text in der Mitte zeichnen (optional)
+    // Schritt-Name in der Mitte
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 40px monospace';
+    ctx.font = 'bold 32px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(Math.ceil(remaining), centerX, centerY);
+    ctx.fillText(SCHRITTE[schrittIdx], cx, cy);
 
-    // 5. Loop
-    if (remaining > 0) {
-        requestAnimationFrame(draw);
+    // Sequenznummer klein darunter
+    ctx.fillStyle = '#00ffaa';
+    ctx.font = '14px monospace';
+    ctx.fillText('birden · ' + (schrittIdx + 1) + '/' + SCHRITTE.length, cx, cy + 60);
+
+    // Weiter oder Ende
+    if (rest > 0) {
+      raf(draw);
     } else {
-        // Countdown beendet
-        ctx.fillStyle = '#00ffaa';
-        ctx.font = 'bold 30px monospace';
-        ctx.fillText('Klärung', centerX, centerY + 80);
-    }
-}
+      zustand.klar = true;
+      zustand.schritte = SCHRITTE.length;
 
-draw();
-</script>
+      ctx.fillStyle = '#00ffaa';
+      ctx.font = 'bold 30px monospace';
+      ctx.fillText('da sein', cx, cy + 80);
+
+      // Online: Klärung senden
+      online();
+    }
+  }
+
+  // Offline: läuft lokal, kein fetch
+  // Online:  Klärung senden
+  async function online() {
+    if (!navigator.onLine) return;
+    try {
+      const r = await fetch('/api/klarung', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(zustand)
+      });
+      if (!r.ok) return;
+      const d = await r.json();
+      if (window.console) console.log('[birden]', d);
+    } catch (e) {
+      // still bleiben. Kein Lärm.
+    }
+  }
+
+  // Netzwerkwechsel: nur reagieren, wenn nötig
+  window.addEventListener('online', () => {
+    if (zustand.klar) online();
+  });
+
+  // Start
+  draw();
+})();
