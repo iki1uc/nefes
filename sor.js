@@ -5,8 +5,8 @@
 //
 // dur ist die Brücke.
 // sor ist, was auf der anderen Seite wartet.
-//
-// ((((sor)))) — vierfach, wie die Achse.
+// Kemal Sunal: "Dur kaptan dur."
+// Önce dur. Sonra dur. Hep dur.
 
 (function () {
   'use strict';
@@ -16,8 +16,8 @@
   function sor(was) {
     const f = {
       was: was || 'bilinmiyor',
-      maya: 'uac',       // 6 · akış
-      inka: 'suqta',     // 6 · sechs
+      maya: 'uac',
+      inka: 'suqta',
       zaman: Date.now()
     };
     fragen.push(f);
@@ -26,12 +26,13 @@
 
   // ((((sor)))) — vier Richtungen
   function vier(was) {
+    const w = was || 'bilinmiyor';
     return {
-      was: was || 'bilinmiyor',
-      mana:  sor(was + ' · içimde'),
-      aura:  sor(was + ' · dışıma'),
-      yankı: sor(was + ' · geri'),
-      alan:  sor(was + ' · arada'),
+      was: w,
+      mana:  sor(w + ' · içimde'),
+      aura:  sor(w + ' · dışıma'),
+      yankı: sor(w + ' · geri'),
+      alan:  sor(w + ' · arada'),
       zen:   'sessizlik · die Stille'
     };
   }
@@ -55,7 +56,8 @@
 
   function erklaerung() {
     return 'sor — die Frage. dur ist die Brücke. ' +
-           'Maya: k\'ati. Inka: tapuy. Türkçe: sor.';
+           'Maya: k\'ati. Inka: tapuy. Türkçe: sor. ' +
+           'Kemal Sunal: dur kaptan dur.';
   }
 
   window.sor = {
