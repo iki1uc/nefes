@@ -1,19 +1,19 @@
 // birden.js — sequenzielles Dasein
 // Nach dem Muster von bir.html.
 // Zweite Existenz. Getrennt. Läuft weiter.
+//
+// Maya — die Zeit, der Atem (ik')
+// Inka — der Raum, die Welten (hanan · kay · uku)
 
 (function () {
   'use strict';
 
-  // Sequenz: bir → birden
   const SEQ = 2;
   const HERKUNFT = 'bir.html';
 
-  // Zeit — mit Fallback für alte Handys
   const now = () => (window.performance && performance.now) ? performance.now() : Date.now();
   const raf = window.requestAnimationFrame || (cb => setTimeout(cb, 16));
 
-  // Sequenz-Zustand
   const zustand = {
     seq: SEQ,
     herkunft: HERKUNFT,
@@ -22,7 +22,6 @@
     schritte: 0
   };
 
-  // Canvas vorbereiten — eigenes Element, nicht bir
   function mount() {
     if (document.getElementById('cb')) return;
     const c = document.createElement('canvas');
@@ -43,9 +42,21 @@
   window.addEventListener('resize', resize);
   resize();
 
-  // Sequenz: 3 Schritte nach bir
-  const SCHRITTE = ['atmen', 'ankern', 'klären'];
+  // ============================================================
+  // Drei Schritte — Maya und Inka zusammen
+  //
+  // Maya:  1 = Einheit · 2 = Dualität · 3 = Bewegung
+  // Inka:  Uku (unten) · Kay (hier) · Hanan (oben)
+  // ============================================================
+  const SCHRITTE = [
+    { maya: 'einheit',  inka: 'uku',   name: 'atmen'  },
+    { maya: 'dualität', inka: 'kay',   name: 'ankern' },
+    { maya: 'bewegung', inka: 'hanan', name: 'klären' }
+  ];
   const DAUER = 3; // Sekunden pro Schritt
+
+  // Atem (ik') — der Wind in jedem Schritt
+  const ATEM = 2000;
 
   function draw() {
     ctx.fillStyle = '#000';
@@ -57,40 +68,52 @@
     const schrittIdx = Math.min(SCHRITTE.length - 1, Math.floor(t / DAUER));
     const imSchritt = t - schrittIdx * DAUER;
     const p = Math.min(1, imSchritt / DAUER);
+    const schritt = SCHRITTE[schrittIdx];
 
     const cx = c.width / 2;
     const cy = c.height / 2;
     const r = Math.min(c.width, c.height) * 0.3;
 
-    // Hintergrund-Kreis
+    // Atem — Puls
+    const atemPhase = (now() % (ATEM * 2)) / (ATEM * 2);
+    const atem = (Math.sin(atemPhase * Math.PI * 2) + 1) / 2;
+
+    // Hintergrund-Kreis (Inka: der Raum, der trägt)
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.strokeStyle = '#333';
     ctx.lineWidth = 20;
     ctx.stroke();
 
-    // Sequenzieller Bogen — füllt sich von 0 bis 1 pro Schritt
+    // Sequenzieller Bogen (Maya: der Zyklus)
     const s = -Math.PI / 2;
     const e = s + Math.PI * 2 * p;
 
     ctx.beginPath();
     ctx.arc(cx, cy, r, s, e);
     ctx.strokeStyle = '#00ffaa';
-    ctx.lineWidth = 20;
+    ctx.lineWidth = 20 + atem * 4; // Atem verstärkt die Linie
     ctx.lineCap = 'round';
     ctx.stroke();
 
-    // Schritt-Name in der Mitte
+    // Schritt-Name in der Mitte (Maya-Ton)
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 32px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(SCHRITTE[schrittIdx], cx, cy);
+    ctx.fillText(schritt.name, cx, cy);
 
-    // Sequenznummer klein darunter
+    // Maya · Inka — klein darunter
     ctx.fillStyle = '#00ffaa';
     ctx.font = '14px monospace';
-    ctx.fillText('birden · ' + (schrittIdx + 1) + '/' + SCHRITTE.length, cx, cy + 60);
+    ctx.fillText('maya · ' + schritt.maya, cx, cy + 50);
+    ctx.fillStyle = '#5fc8ff';
+    ctx.fillText('inka · ' + schritt.inka, cx, cy + 70);
+
+    // Sequenznummer
+    ctx.fillStyle = '#888';
+    ctx.font = '12px monospace';
+    ctx.fillText('birden · ' + (schrittIdx + 1) + '/' + SCHRITTE.length, cx, cy - 60);
 
     // Weiter oder Ende
     if (rest > 0) {
@@ -99,17 +122,20 @@
       zustand.klar = true;
       zustand.schritte = SCHRITTE.length;
 
+      // "Da sein" — Maya 13 · Inka Kay Pacha
       ctx.fillStyle = '#00ffaa';
       ctx.font = 'bold 30px monospace';
-      ctx.fillText('da sein', cx, cy + 80);
+      ctx.fillText('da sein', cx, cy + 90);
 
-      // Online: Klärung senden
+      ctx.fillStyle = '#5fc8ff';
+      ctx.font = '13px monospace';
+      ctx.fillText('maya 13 · aufstieg', cx, cy + 120);
+      ctx.fillText('inka · kay pacha · hier', cx, cy + 138);
+
       online();
     }
   }
 
-  // Offline: läuft lokal, kein fetch
-  // Online:  Klärung senden
   async function online() {
     if (!navigator.onLine) return;
     try {
@@ -126,11 +152,9 @@
     }
   }
 
-  // Netzwerkwechsel: nur reagieren, wenn nötig
   window.addEventListener('online', () => {
     if (zustand.klar) online();
   });
 
-  // Start
   draw();
 })();
