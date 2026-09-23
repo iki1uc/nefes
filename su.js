@@ -10,23 +10,23 @@
   'use strict';
 
   const EK = {
-    ki:      { was: 'wer',        sprache: 'tr',  rolle: 'frage' },
-    klar:    { was: 'klar',       sprache: 'tr',  rolle: 'klärung' },
-    dur:     { was: 'halt',       sprache: 'tr',  rolle: 'zustand' },
-    durdur:  { was: 'veranlasst', sprache: 'tr',  rolle: 'funktion' },
-    ikilem:  { was: 'dilemma',    sprache: 'tr',  rolle: 'auflösung' },
-    hal:     { was: 'lage',       sprache: 'tr',  rolle: 'summe' },
-    id:      { was: 'marker',     sprache: 'tr',  rolle: 'zeiger' },
-    sorge:   { was: 'sorge',      sprache: 'de',  rolle: 'warnung' },
-    kaygi:   { was: 'angst',      sprache: 'tr',  rolle: 'grund' },
-    nefes:   { was: 'atem',       sprache: 'tr',  rolle: 'alles' }
+    ki:      { was: 'wer',        sprache: 'tr', rolle: 'frage' },
+    klar:    { was: 'klar',       sprache: 'tr', rolle: 'klärung' },
+    dur:     { was: 'halt',       sprache: 'tr', rolle: 'zustand' },
+    durdur:  { was: 'veranlasst', sprache: 'tr', rolle: 'funktion' },
+    ikilem:  { was: 'dilemma',    sprache: 'tr', rolle: 'auflösung' },
+    hal:     { was: 'lage',       sprache: 'tr', rolle: 'summe' },
+    id:      { was: 'marker',     sprache: 'tr', rolle: 'zeiger' },
+    sorge:   { was: 'sorge',      sprache: 'de', rolle: 'warnung' },
+    kaygi:   { was: 'angst',      sprache: 'tr', rolle: 'grund' },
+    nefes:   { was: 'atem',       sprache: 'tr', rolle: 'alles' }
   };
 
   function bak(id) {
     const e = EK[id];
     if (!e) return null;
-    const geladen = typeof window[id] === 'object' ||
-                    typeof window[id] === 'function';
+    const geladen =
+      typeof window[id] === 'object' || typeof window[id] === 'function';
     return {
       id: id,
       was: e.was,
@@ -39,12 +39,12 @@
 
   function hep() {
     const liste = [];
-    Object.keys(EK).forEach(id => { liste.push(bak(id)); });
+    Object.keys(EK).forEach(function (id) { liste.push(bak(id)); });
     return liste;
   }
 
-  function geladen() { return hep().filter(e => e.geladen); }
-  function fehlt()   { return hep().filter(e => !e.geladen); }
+  function geladen() { return hep().filter(function (e) { return e.geladen; }); }
+  function fehlt()   { return hep().filter(function (e) { return !e.geladen; }); }
 
   function durum() {
     const g = geladen().length;
@@ -63,11 +63,10 @@
   }
 
   function erklaerung() {
-    return 'su — das. Anhängsel zu bu (dies). ' +
-           'Türkçe, Maya, İnka. Was nicht in die 21 passt.';
+    return 'su — das. Anhängsel zu bu (dies). Türkçe, Maya, İnka.';
   }
 
-  const api = { EK, bak, hep, geladen, fehlt, durum, erklaerung };
+  const api = { EK: EK, bak: bak, hep: hep, geladen: geladen, fehlt: fehlt, durum: durum, erklaerung: erklaerung };
   if (typeof window !== 'undefined') window.su = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })();
