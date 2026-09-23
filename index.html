@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>index · freizeit · schlaf · feedback</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:#05050c;color:#eee;
+            font-family:monospace;font-size:14px;line-height:1.6}
+
+  #buehne{max-width:640px;margin:0 auto;padding:28px 20px 80px}
+
+  #kopf{text-align:center;margin-bottom:28px}
+  #kopf h1{color:#ffcc44;font-size:17px;margin:0 0 6px;
+           font-weight:normal;letter-spacing:3px}
+  #kopf .hauch{color:#5fc8ff;font-size:10px}
+  #kopf .hauch .maya{color:#00ffaa}
+  #kopf .hauch .inka{color:#ff0066}
+
+  .block{margin-bottom:24px}
+  .block .titel{color:#5fc8ff;font-size:11px;
+                letter-spacing:1px;margin-bottom:10px}
+
+  /* Schlaf-Anzeige */
+  #schlaf{
+    padding:14px;background:rgba(95,200,255,0.04);
+    border-left:3px solid #5fc8ff;border-radius:0 6px 6px 0;
+    margin-bottom:20px
+  }
+  #schlaf .was{color:#5fc8ff;font-size:11px;
+               letter-spacing:1px;margin-bottom:6px}
+  #schlaf .info{color:#eee;font-size:13px}
+  #schlaf .info b{color:#ffcc44}
+  #schlaf .warnung{color:#ff0066;font-size:11px;margin-top:6px;
+                   display:none}
+  #schlaf .warnung.aktiv{display:block}
+
+  /* Zeit-Eingabe */
+  .zeile{display:flex;gap:10px;margin-bottom:10px;align-items:center}
+  .zeile label{color:#888;font-size:11px;width:80px}
+  .zeile input[type=time]{
+    flex:1;padding:8px;background:#020208;color:#00ffaa;
+    border:1px solid #1a3a2a;border-radius:4px;
+    font-family:monospace;font-size:13px
+  }
+  .zeile input[type=time]:focus{outline:none;border-color:#00ffaa}
+
+  /* Slots */
+  #slots{margin-top:16px}
+  .slot{
+    padding:10px 12px;margin:6px 0;
+    background:rgba(255,255,255,0.02);
+    border:1px solid #1a1a2a;border-left:3px solid #1a1a2a;
+    border-radius:0 4px 4px 0;
+    font-size:12px;display:flex;
+    justify-content:space-between;align-items:center
+  }
+  .slot.frei{border-left-color:#00ffaa}
+  .slot.schlaf{border-left-color:#5fc8ff;
+               background:rgba(95,200,255,0.04)}
+  .slot.blockiert{border-left-color:#555;opacity:0.5}
+  .slot .zeit{color:#ffcc44;font-size:11px;
+              letter-spacing:1px}
+  .slot .was{color:#eee}
+  .slot .tag{color:#888;font-size:10px}
+
+  /* Aktivität */
+  #aktivitaet{
+    margin-top:20px;padding:16px;
+    background:rgba(255,255,255,0.02);
+    border:1px solid #1a1a2a;border-radius:6px
+  }
+  #aktivitaet .titel{color:#5fc8ff;font-size:11px;
+                     letter-spacing:1px;margin-bottom:10px}
+
+  .feld{margin-bottom:10px}
+  .feld label{display:block;color:#888;font-size:10px;
+              margin-bottom:4px;letter-spacing:1px}
+  .feld input, .feld select{
+    width:100%;padding:9px;background:#020208;color:#00ffaa;
+    border:1px solid #1a3a2a;border-radius:4px;
+    font-family:monospace;font-size:13px
+  }
+  .feld input:focus, .feld select:focus{
+    outline:none;border-color:#00ffaa
+  }
+
+  .knopf{
+    display:block;width:100%;padding:13px;
+    background:rgba(0,255,170,0.05);color:#00ffaa;
+    border:1px solid #00ffaa;border-radius:6px;
+    cursor:pointer;font-family:monospace;font-size:13px;
+    letter-spacing:2px;transition:all .3s;margin-top:10px
+  }
+  .knopf:hover{background:rgba(0,255,170,0.15)}
+
+  /* Feedback */
+  #feedback{
+    display:none;margin-top:24px;padding:16px;
+    border-radius:6px;font-size:13px;line-height:1.7
+  }
+  #feedback.aktiv{display:block}
+  #feedback.ok{background:rgba(0,255,170,0.05);
+               border:1px solid #00ffaa}
+  #feedback.warn{background:rgba(255,204,68,0.05);
+                 border:1px solid #ffcc44}
+  #feedback.no{background:rgba(255,0,102,0.05);
+               border:1px solid #ff0066}
+  #feedback .kopf-zeile{font-size:12px;letter-spacing:2px;
+                        margin-bottom:10px}
+  #feedback.ok .kopf-zeile{color:#00ffaa}
+  #feedback.warn .kopf-zeile{color:#ffcc44}
+  #feedback.no .kopf-zeile{color:#ff0066}
+  #feedback .text{color:#eee}
+  #feedback .text b{color:#ffcc44}
+  #feedback .empfehlung{
+    margin-top:12px;padding-top:12px;
+    border-top:1px solid rgba(255,255,255,0.1);
+    color:#5fc8ff;font-size:12px
+  }
+
+  #status{
+    position:fixed;bottom:16px;right:16px;
+    padding:8px 14px;background:rgba(5,5,12,0.85);
+    border:1px solid #1a1a2a;border-radius:4px;
+    font-size:10px;color:#666
+  }
+  #status b{color:#ffcc44}
+</style>
+</head>
+<body>
+
+<div id="buehne">
+
+  <div id="kopf">
+    <h1>index · freizeit</h1>
+    <div class="hauch">
+      <span class="maya">maya · ik'</span> ·
+      <span class="maya">schlaf im auge</span> ·
+      <span class="inka">inka · samay</span>
+    </div>
+  </div>
+
+  <!-- ===== SCHLAF ===== -->
+  <div id="schlaf">
+    <div class="was">schlaf · geschützt</div>
+    <div class="info">
+      von <b id="s-von">23:00</b> bis <b id="s-bis">07:00</b>
+      · <b id="s-dauer">8h</b>
+    </div>
+    <div class="warnung" id="s-warn">
+      ⚠ schlaf unter 7 stunden — nicht verhandelbar
+    </div>
+  </div>
+
+  <!-- ===== SCHLAF EINGABE ===== -->
+  <div class="block">
+    <div class="titel">schlaf einstellen</div>
+    <div class="zeile">
+      <label>von</label>
+      <input type="time" id="in-von" value="23:00">
+    </div>
+    <div class="zeile">
+      <label>bis</label>
+      <input type="time" id="in-bis" value="07:00">
+    </div>
+  </div>
+
+  <!-- ===== SLOTS ===== -->
+  <div class="block">
+    <div class="titel">freizeit · heute</div>
+    <div id="slots"></div>
+  </div>
+
+  <!-- ===== AKTIVITÄT ===== -->
+  <div id="aktivitaet">
+    <div class="titel">was willst du tun?</div>
+
+    <div class="feld">
+      <label>name</label>
+      <input id="a-name" placeholder="spaziergang, lesen, kochen…">
+    </div>
+
+    <div class="feld">
+      <label>dauer (minuten)</label>
+      <input id="a-dauer" type="number" min="5" max="600"
+             value="60">
+    </div>
+
+    <div class="feld">
+      <label>wann</label>
+      <select id="a-wann">
+        <option value="jetzt">jetzt</option>
+        <option value="spaeter">später heute</option>
+        <option value="morgen">morgen</option>
+      </select>
+    </div>
+
+    <button class="knopf" onclick="index.pruefen()">
+      prüfen · göster
+    </button>
+  </div>
+
+  <!-- ===== FEEDBACK ===== -->
+  <div id="feedback">
+    <div class="kopf-zeile" id="fb-kopf">–</div>
+    <div class="text" id="fb-text"></div>
+    <div class="empfehlung" id="fb-emp"></div>
+  </div>
+
+</div>
+
+<div id="status">
+  freizeit: <b id="st-f">–</b> ·
+  schlaf: <b id="st-s">–</b>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+const $ = function(id){ return document.getElementById(id); };
+
+// ============================================================
+// HILFSFUNKTIONEN
+// ============================================================
+function toMin(zeit){
+  // "23:00" → 1380
+  const p = zeit.split(':');
+  return parseInt(p[0],10) * 60 + parseInt(p[1],10);
+}
+function toStr(min){
+  min = ((min % 1440) + 1440) % 1440;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+}
+function dauerH(von, bis){
+  // dauer in stunden, korrekt über mitternacht
+  let d = toMin(bis) - toMin(von);
+  if(d <= 0) d += 1440;
+  return d / 60;
+}
+function jetztMin(){
+  const n = new Date();
+  return n.getHours() * 60 + n.getMinutes();
+}
+
+// ============================================================
+// INDEX — der Führer
+// ============================================================
+const index = {
+
+  // ---- Schlaf einstellen ----
+  schlafUpdate: function(){
+    const von = $('in-von').value || '23:00';
+    const bis = $('in-bis').value || '07:00';
+    const d = dauerH(von, bis);
+
+    $('s-von').textContent = von;
+    $('s-bis').textContent = bis;
+    $('s-dauer').textContent = d.toFixed(1) + 'h';
+
+    const w = $('s-warn');
+    if(d < 7){
+      w.classList.add('aktiv');
+      w.textContent = '⚠ schlaf nur ' + d.toFixed(1) +
+                      'h — zu wenig. mindestens 7h.';
+    } else {
+      w.classList.remove('aktiv');
+    }
+
+    $('st-s').textContent = d.toFixed(1) + 'h';
+    index.slotsBauen();
+  },
+
+  // ---- Slots bauen ----
+  slotsBauen: function(){
+    const von = $('in-von').value || '23:00';
+    const bis = $('in-bis').value || '07:00';
+
+    const schlafVon = toMin(von);
+    const schlafBis = toMin(bis);
+
+    // Tagesstruktur: 0:00 bis 24:00
+    // Slots: 3-Stunden-Blöcke
+    const bloecke = [];
+    for(let i = 0; i < 24; i += 3){
+      bloecke.push({ von: i*60, bis: (i+3)*60 });
+    }
+
+    const box = $('slots');
+    box.innerHTML = '';
+    let freieCount = 0;
+
+    bloecke.forEach(function(b){
+      const istSchlaf = index.istImSchlaf(b.von, b.bis,
+                                           schlafVon, schlafBis);
+      const istVergangen = b.bis <= jetztMin();
+
+      let klasse = 'frei';
+      let was = 'frei · kannst was tun';
+
+      if(istSchlaf){
+        klasse = 'schlaf';
+        was = 'schlaf · geschützt';
+      } else if(istVergangen){
+        klasse = 'blockiert';
+        was = 'vorbei';
+      } else {
+        freieCount++;
+      }
+
+      const d = document.createElement('div');
+      d.className = 'slot ' + klasse;
+      d.innerHTML =
+        '<div>' +
+          '<div class="zeit">' + toStr(b.von) + ' – ' +
+          toStr(b.bis) + '</div>' +
+          '<div class="was">' + was + '</div>' +
+        '</div>' +
+        '<div class="tag">' + (b.bis - b.von)/60 + 'h</div>';
+      box.appendChild(d);
+    });
+
+    $('st-f').textContent = freieCount + ' blöcke';
+  },
+
+  // ---- Ist Zeit im Schlaf? ----
+  istImSchlaf: function(von, bis, sVon, sBis){
+    // Über Mitternacht?
+    if(sVon > sBis){
+      // Schlaf geht über 0:00
+      // z.B. 23:00 (1380) bis 07:00 (420)
+      // alles >= 1380 ODER alles < 420 ist Schlaf
+      const a1 = von >= sVon;
+      const a2 = von < sBis;
+      const b1 = bis > sVon;
+      const b2 = bis <= sBis;
+      return (a1 || a2) || (b1 && b2);
+    } else {
+      // Schlaf innerhalb eines Tages
+      return !(bis <= sVon || von >= sBis);
+    }
+  },
+
+  // ---- Prüfen ----
+  pruefen: function(){
+    const name = ($('a-name').value || '').trim() || 'etwas';
+    const dauer = parseInt($('a-dauer').value, 10) || 60;
+    const wann = $('a-wann').value;
+
+    const von = $('in-von').value || '23:00';
+    const bis = $('in-bis').value || '07:00';
+    const schlafDauer = dauerH(von, bis);
+
+    const fb = $('feedback');
+    const kopf = $('fb-kopf');
+    const text = $('fb-text');
+    const emp = $('fb-emp');
+
+    // === Schlaf zu kurz ===
+    if(schlafDauer < 7){
+      fb.className = 'aktiv no';
+      kopf.textContent = '✗ schlaf zu kurz';
+      text.innerHTML =
+        'Dein Schlaf ist <b>' + schlafDauer.toFixed(1) +
+        ' h</b>. Unter 7 Stunden geht nichts. ' +
+        'Kein Spaziergang, kein Kochen, kein Lesen. ' +
+        '<b>Erst Schlaf. Dann Freizeit.</b>';
+      emp.textContent =
+        '→ schlaf verlängern auf mindestens 7h. ' +
+        'Dann nochmal prüfen.';
+      return;
+    }
+
+    // === Zeit jetzt ===
+    const jetzt = jetztMin();
+    const schlafVon = toMin(von);
+    const schlafBis = toMin(bis);
+
+    // === Wenn jetzt im Schlaf ===
+    if(index.istImSchlaf(jetzt, jetzt + 1, schlafVon, schlafBis)){
+      fb.className = 'aktiv no';
+      kopf.textContent = '✗ jetzt ist schlafzeit';
+      text.innerHTML =
+        'Es ist <b>' + toStr(jetzt) + '</b>. ' +
+        'Das ist Schlafzeit. ' +
+        'Kein ' + name + '. Kein gar nichts.';
+      emp.textContent = '→ schlafen.';
+      return;
+    }
+
+    // === Dauer prüfen ===
+    // Wie viel Zeit bis Schlafbeginn?
+    let bisSchlaf = schlafVon - jetzt;
+    if(bisSchlaf < 0) bisSchlaf += 1440;
+
+    if(wann === 'jetzt'){
+      if(dauer > bisSchlaf){
+        fb.className = 'aktiv warn';
+        kopf.textContent = '⚠ passt nicht ganz';
+        text.innerHTML =
+          'Deine Aktivität dauert <b>' + dauer +
+          ' min</b>, aber bis zum Schlaf sind es nur <b>' +
+          bisSchlaf + ' min</b>. ' +
+          'Das würde Schlaf fressen.';
+        emp.textContent =
+          '→ kürzer machen (max ' + (bisSchlaf - 15) + ' min), ' +
+          'oder auf morgen verschieben.';
+        return;
+      }
+      if(dauer > bisSchlaf - 15){
+        fb.className = 'aktiv warn';
+        kopf.textContent = '⚠ knapp';
+        text.innerHTML =
+          name + ' (' + dauer + ' min) passt gerade so. ' +
+          'Aber du hättest nur <b>15 min</b> Puffer vor Schlaf.';
+        emp.textContent = '→ okay, aber beeil dich.';
+        return;
+      }
+      fb.className = 'aktiv ok';
+      kopf.textContent = '✓ passt';
+      text.innerHTML =
+        name + ' (' + dauer + ' min) passt. ' +
+        '<b>' + (bisSchlaf - dauer) + ' min</b> Puffer ' +
+        'bis Schlaf.';
+      emp.textContent = '→ viel Spaß.';
+      return;
+    }
+
+    if(wann === 'spaeter'){
+      // später heute = irgendwann vor Schlaf
+      if(dauer > bisSchlaf){
+        fb.className = 'aktiv warn';
+        kopf.textContent = '⚠ nur knapp';
+        text.innerHTML =
+          'Heute ist nicht mehr viel Zeit. ' +
+          'Bis Schlaf: <b>' + bisSchlaf + ' min</b>. ' +
+          'Deine Aktivität: <b>' + dauer + ' min</b>.';
+        emp.textContent =
+          '→ verschiebe auf morgen, ' +
+          'oder mach es kürzer.';
+        return;
+      }
+      fb.className = 'aktiv ok';
+      kopf.textContent = '✓ passt';
+      text.innerHTML =
+        name + ' heute noch machbar. ' +
+        'Puffer bis Schlaf: <b>' +
+        (bisSchlaf - dauer) + ' min</b>.';
+      emp.textContent = '→ los.';
+      return;
+    }
+
+    if(wann === 'morgen'){
+      // morgen: freizeit nach schlaf
+      const nachSchlaf = schlafBis;
+      const freiMorgen = 24*60 - nachSchlaf - (24*60 - schlafVon);
+      // = schlafVon - schlafBis = wachzeit
+      let wach = schlafVon - schlafBis;
+      if(wach < 0) wach += 1440;
+
+      if(dauer > wach){
+        fb.className = 'aktiv warn';
+        kopf.textContent = '⚠ zu lang';
+        text.innerHTML =
+          'Morgen hast du <b>' + (wach/60).toFixed(1) +
+          ' h</b> wach. Deine Aktivität: <b>' +
+          (dauer/60).toFixed(1) + ' h</b>. ' +
+          'Passt nicht.';
+        emp.textContent = '→ kürzer machen.';
+        return;
+      }
+      if(dauer > wach * 0.5){
+        fb.className = 'aktiv warn';
+        kopf.textContent = '⚠ viel';
+        text.innerHTML =
+          'Das ist mehr als die Hälfte deiner wachen Zeit. ' +
+          'Bedenke: Essen, Arbeit, Pausen.';
+        emp.textContent = '→ okay, aber nur wenn du fit bist.';
+        return;
+      }
+      fb.className = 'aktiv ok';
+      kopf.textContent = '✓ passt';
+      text.innerHTML =
+        name + ' morgen (' + dauer + ' min). ' +
+        'Genug Platz in deiner wachen Zeit (' +
+        (wach/60).toFixed(1) + ' h).';
+      emp.textContent = '→ eingeplant.';
+      return;
+    }
+  }
+};
+
+// ============================================================
+// EVENTS
+// ============================================================
+$('in-von').addEventListener('change', index.schlafUpdate);
+$('in-bis').addEventListener('change', index.schlafUpdate);
+
+// ============================================================
+// START
+// ============================================================
+window.index = index;
+index.schlafUpdate();
+setInterval(index.slotsBauen, 60000); // jede Minute neu
+
+})();
+</script>
+</body>
+</html>
