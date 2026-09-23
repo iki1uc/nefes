@@ -1,15 +1,21 @@
 // dur.js — der Halt (Zustand)
 // Türkçe: dur = halt
-// Maya:   kan = 4 · Form
-// Inka:   sayay = anhalten
+// Maya:   kan
+// Inka:   sayay
 //
 // NUR window.dur. Kein window.durdur.
-// durdur ist eine andere Datei.
+// durdur ist eine eigene Datei.
 
 (function () {
   'use strict';
 
   const zustand = new Map();
+
+  function ekle(neden) {
+    const n = neden || 'bilinmiyor';
+    zustand.set(n, n + ' durdu');
+    return sachverhalt();
+  }
 
   function sachverhalt() {
     const n = zustand.size;
@@ -25,37 +31,26 @@
     };
   }
 
-  function liste() { return Array.from(zustand.entries()); }
-  function temizle() { zustand.clear(); return sachverhalt(); }
-
-  function ekle(neden) {
-    const n = neden || 'bilinmiyor';
-    zustand.set(n, n + ' durdu');
-    return sachverhalt();
-  }
-
   function ve(a, b) {
     if (a === undefined) return { ve: null };
     if (b === undefined) return { ve: [a] };
-    return {
-      ve: [a, b], maya: 'ka', inka: 'iskay',
-      hinweis: 'ikisi de · beide'
-    };
+    return { ve: [a, b], maya: 'ka', inka: 'iskay', hinweis: 'ikisi de' };
   }
+
+  function liste() { return Array.from(zustand.entries()); }
+  function temizle() { zustand.clear(); return sachverhalt(); }
 
   function erklaerung() {
-    return 'dur — der Halt. Zustand. ' +
-           'Maya: kan. Inka: sayay. Türkçe: dur.';
+    return 'dur — der Halt. Zustand. Maya: kan. Inka: sayay.';
   }
 
-  // NUR window.dur
   window.dur = {
     zustand: zustand,
+    ekle: ekle,
     sachverhalt: sachverhalt,
+    ve: ve,
     liste: liste,
     temizle: temizle,
-    ekle: ekle,
-    ve: ve,
     erklaerung: erklaerung
   };
 })();
