@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>mind · 3 9 81 3 · mit schrauben</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:#05050c;color:#eee;
+            font-family:monospace;font-size:13px;line-height:1.6}
+  #buehne{max-width:760px;margin:0 auto;padding:24px 18px 60px}
+  h1{color:#ffcc44;font-size:16px;text-align:center;
+     font-weight:normal;letter-spacing:3px;margin:0 0 4px}
+  .hauch{color:#5fc8ff;font-size:10px;text-align:center;
+         margin-bottom:24px}
+  .hauch .maya{color:#00ffaa}
+  .hauch .inka{color:#ff0066}
+
+  /* ===== SCHRAUBEN ===== */
+  #schrauben{
+    background:rgba(95,200,255,0.03);
+    border:1px solid #1a3a4a;border-radius:6px;
+    padding:14px 16px;margin-bottom:20px
+  }
+  #schrauben .kopf{
+    color:#5fc8ff;font-size:11px;letter-spacing:2px;
+    margin-bottom:12px;padding-bottom:8px;
+    border-bottom:1px solid #1a3a4a;
+    display:flex;justify-content:space-between
+  }
+  #schrauben .kopf .hint{color:#555;font-size:10px;
+                         letter-spacing:0}
+
+  .schraube{
+    display:grid;grid-template-columns:130px 1fr 50px;
+    gap:10px;align-items:center;margin-bottom:10px
+  }
+  .schraube .name{
+    color:#ffcc44;font-size:11px;
+    letter-spacing:1px;font-weight:bold
+  }
+  .schraube .name small{
+    display:block;color:#666;font-size:9px;
+    font-weight:normal;letter-spacing:0;
+    margin-top:2px
+  }
+  .schraube input[type=range]{
+    width:100%;accent-color:#00ffaa;height:4px
+  }
+  .schraube .val{
+    color:#00ffaa;font-size:12px;
+    text-align:right;font-variant-numeric:tabular-nums
+  }
+
+  #formel{
+    margin-top:12px;padding:10px 12px;
+    background:rgba(0,0,0,0.4);border-radius:4px;
+    font-size:11px;line-height:1.7;color:#7ce0a8;
+    white-space:pre-wrap
+  }
+  #formel .tr{color:#ffcc44}
+  #formel .ok{color:#00ffaa}
+  #formel .dim{color:#555}
+
+  /* ===== KETTE ===== */
+  .ring{display:flex;justify-content:center;
+        gap:6px;flex-wrap:wrap;margin-bottom:20px}
+  .stufe{padding:6px 14px;border:1px solid #1a1a2a;
+         border-radius:20px;font-size:11px;color:#555;
+         transition:all .3s}
+  .stufe.aktiv{color:#ffcc44;border-color:#ffcc44;
+               background:rgba(255,204,68,0.08)}
+  .stufe.fertig{color:#00ffaa;border-color:#00ffaa;
+                background:rgba(0,255,170,0.05)}
+
+  /* ===== EINGABE ===== */
+  .feld{display:flex;gap:8px;margin-bottom:16px}
+  .feld input{flex:1;padding:10px;background:#020208;
+              color:#00ffaa;border:1px solid #1a3a2a;
+              border-radius:4px;font-family:monospace;font-size:13px}
+  .feld input:focus{outline:none;border-color:#00ffaa}
+  .feld button{padding:10px 20px;background:rgba(0,255,170,0.05);
+               color:#00ffaa;border:1px solid #00ffaa;
+               border-radius:4px;cursor:pointer;
+               font-family:monospace;font-size:12px;
+               letter-spacing:1px;transition:all .2s}
+  .feld button:hover{background:rgba(0,255,170,0.15)}
+  .feld button.auto{background:rgba(255,204,68,0.05);
+                    color:#ffcc44;border-color:#ffcc44}
+  .feld button.auto:hover{background:rgba(255,204,68,0.15)}
+
+  /* ===== GEDÄCHTNIS ===== */
+  #gedaechtnis{
+    background:rgba(0,255,170,0.03);
+    border:1px solid #1a3a2a;border-radius:6px;
+    padding:12px 16px;margin-bottom:16px;
+    font-size:11px;line-height:1.7
+  }
+  #gedaechtnis .kopf{
+    color:#00ffaa;font-size:10px;letter-spacing:2px;
+    margin-bottom:6px
+  }
+  #gedaechtnis .leer{color:#555;font-style:italic}
+  #gedaechtnis b{color:#ffcc44;font-weight:normal}
+  #gedaechtnis .dim{color:#666;font-size:10px}
+
+  /* ===== LOG ===== */
+  .log{background:#020208;border:1px solid #1a3a2a;
+       border-radius:6px;padding:14px;min-height:200px;
+       font-size:12px;line-height:1.7;white-space:pre-wrap;
+       color:#7ce0a8;max-height:400px;overflow-y:auto}
+  .log .tr{color:#ffcc44}
+  .log .dim{color:#555}
+  .log .ok{color:#00ffaa}
+  .log .no{color:#ff0066}
+  .log .kopf{color:#5fc8ff}
+
+  .knopf{display:block;width:100%;padding:12px;margin-top:12px;
+         background:rgba(0,255,170,0.05);color:#00ffaa;
+         border:1px solid #00ffaa;border-radius:6px;
+         cursor:pointer;font-family:monospace;font-size:13px;
+         letter-spacing:2px;transition:all .3s}
+  .knopf:hover{background:rgba(0,255,170,0.15)}
+  .knopf.warn{color:#ff0066;border-color:#ff0066;
+              background:rgba(255,0,102,0.05)}
+  .knopf.warn:hover{background:rgba(255,0,102,0.15)}
+
+  #status{position:fixed;bottom:16px;right:16px;
+          padding:8px 14px;background:rgba(5,5,12,0.85);
+          border:1px solid #1a1a2a;border-radius:4px;
+          font-size:10px;color:#666}
+  #status b{color:#ffcc44}
+</style>
+</head>
+<body>
+
+<div id="buehne">
+  <h1>mind</h1>
+  <div class="hauch">
+    <span class="maya">3 · 9 · 81 · 3</span> ·
+    <span class="inka">gedächtnis + kette</span>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SCHRAUBEN — hier dreht man                     -->
+  <!-- ============================================ -->
+  <div id="schrauben">
+    <div class="kopf">
+      <span>SCHRAUBEN · hier drehen</span>
+      <span class="hint">formel unten aktualisiert sich live</span>
+    </div>
+
+    <div class="schraube">
+      <div class="name">
+        roh-gewicht
+        <small>was DU eingibst</small>
+      </div>
+      <input type="range" id="s-roh" min="0" max="100" value="40">
+      <span class="val" id="v-roh">40</span>
+    </div>
+
+    <div class="schraube">
+      <div class="name">
+        mittel-gewicht
+        <small>letzter durchschnitt</small>
+      </div>
+      <input type="range" id="s-mittel" min="0" max="100" value="30">
+      <span class="val" id="v-mittel">30</span>
+    </div>
+
+    <div class="schraube">
+      <div class="name">
+        max-gewicht
+        <small>letzter höchstwert</small>
+      </div>
+      <input type="range" id="s-max" min="0" max="100" value="30">
+      <span class="val" id="v-max">30</span>
+    </div>
+
+    <div class="schraube">
+      <div class="name">
+        dämpfung
+        <small>wie stark gedächtnis verblasst</small>
+      </div>
+      <input type="range" id="s-daempf" min="0" max="100" value="10">
+      <span class="val" id="v-daempf">10</span>
+    </div>
+
+    <div id="formel"></div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- KETTE                                         -->
+  <!-- ============================================ -->
+  <div class="ring" id="ring">
+    <div class="stufe" data-s="empfang">empfang</div>
+    <div class="stufe" data-s="3">3</div>
+    <div class="stufe" data-s="9">9</div>
+    <div class="stufe" data-s="81">81</div>
+    <div class="stufe" data-s="3zurueck">3 ↺</div>
+    <div class="stufe" data-s="versand">versand</div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- EINGABE                                       -->
+  <!-- ============================================ -->
+  <div class="feld">
+    <input id="in" placeholder="gib was ein — zahl, wort, gefühl…"
+           value="7">
+    <button onclick="lauf.start()">start</button>
+    <button class="auto" onclick="lauf.auto()">auto · 10×</button>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- GEDÄCHTNIS                                    -->
+  <!-- ============================================ -->
+  <div id="gedaechtnis">
+    <div class="kopf">GEDÄCHTNIS · was bleibt</div>
+    <div id="ged-inhalt">
+      <span class="leer">noch kein lauf. drück start.</span>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- LOG                                           -->
+  <!-- ============================================ -->
+  <div class="log" id="log">
+    <span class="dim">warte auf eingabe…</span>
+  </div>
+
+  <button class="knopf warn" onclick="lauf.reset()">reset · alles vergessen</button>
+</div>
+
+<div id="status">
+  stufe: <b id="st-s">–</b> ·
+  durchlauf: <b id="st-d">0</b>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+const $ = function(id){ return document.getElementById(id); };
+const log = $('log');
+const stS = $('st-s');
+const stD = $('st-d');
+
+let durchlauf = 0;
+
+// ============================================================
+// GEDÄCHTNIS — das ist das Neue
+// ============================================================
+let letzterAusgang = null;  // ← hier lebt die Konsequenz
+
+// ============================================================
+// SCHRAUBEN — hier werden die Parameter gelesen
+// ============================================================
+function schrauben(){
+  return {
+    roh:    parseInt($('s-roh').value, 10) / 100,
+    mittel: parseInt($('s-mittel').value, 10) / 100,
+    max:    parseInt($('s-max').value, 10) / 100,
+    daempf: parseInt($('s-daempf').value, 10) / 100
+  };
+}
+
+function schraubenUpdate(){
+  // Werte anzeigen
+  $('v-roh').textContent    = $('s-roh').value;
+  $('v-mittel').textContent = $('s-mittel').value;
+  $('v-max').textContent    = $('s-max').value;
+  $('v-daempf').textContent = $('s-daempf').value;
+
+  const s = schrauben();
+
+  // Formel live anzeigen
+  let formel = '<span class="tr">neuerEingang</span> =\n';
+  formel += '  <span class="ok">' + s.roh.toFixed(2) + '</span> × roh';
+  formel += '  + <span class="ok">' + s.mittel.toFixed(2) + '</span> × letzterMittel';
+  formel += '  + <span class="ok">' + s.max.toFixed(2) + '</span> × letzterMax\n\n';
+  formel += '<span class="dim">dämpfung: ' + s.daempf.toFixed(2) +
+            ' → gedächtnis verblasst pro lauf</span>';
+
+  if(letzterAusgang){
+    formel += '\n\n<span class="dim">aktueller stand:</span>\n';
+    formel += '  letzterMittel = <span class="ok">' +
+              letzterAusgang.mittel + '</span>\n';
+    formel += '  letzterMax    = <span class="ok">' +
+              letzterAusgang.max + '</span>';
+  } else {
+    formel += '\n\n<span class="dim">aktueller stand: — (kein gedächtnis)</span>';
+  }
+
+  $('formel').innerHTML = formel;
+}
+
+// ============================================================
+// AUSGABE
+// ============================================================
+function aus(html, klasse){
+  const d = document.createElement('div');
+  if(klasse) d.className = klasse;
+  d.innerHTML = html;
+  log.appendChild(d);
+  log.scrollTop = log.scrollHeight;
+}
+function linie(){ aus('─'.repeat(40), 'dim'); }
+
+// ============================================================
+// STUFEN MARKIEREN
+// ============================================================
+function markiere(name, zustand){
+  document.querySelectorAll('.stufe').forEach(function(el){
+    if(el.getAttribute('data-s') === name){
+      el.classList.remove('aktiv', 'fertig');
+      if(zustand) el.classList.add(zustand);
+    }
+  });
+  stS.textContent = name;
+}
+function markiereAlleFertig(){
+  document.querySelectorAll('.stufe').forEach(function(el){
+    el.classList.add('fertig');
+  });
+}
+function markiereAlleLeer(){
+  document.querySelectorAll('.stufe').forEach(function(el){
+    el.classList.remove('aktiv', 'fertig');
+  });
+}
+
+// ============================================================
+// EINGANG MODULIEREN — hier wirkt das Gedächtnis
+// ============================================================
+function neuerEingang(roh){
+  const s = schrauben();
+
+  // Wenn kein Gedächtnis: roh bleibt roh
+  if(!letzterAusgang){
+    return roh;
+  }
+
+  // Sonst: mische roh + gedächtnis nach schrauben
+  const gemischt =
+      roh * s.roh
+    + letzterAusgang.mittel * s.mittel
+    + letzterAusgang.max    * s.max;
+
+  return Math.round(gemischt);
+}
+
+// ============================================================
+// KETTE — unverändert
+// ============================================================
+function empfang(raw){
+  markiere('empfang', 'aktiv');
+  aus('<span class="kopf">▸ empfang</span>  von außen', 'kopf');
+  aus('  eingang roh: <span class="tr">' + JSON.stringify(raw) + '</span>');
+
+  const wert = typeof raw === 'string' ? raw : String(raw);
+  const zahl = isNaN(parseFloat(wert)) ? wert.length : parseFloat(wert);
+
+  aus('  erkannt als zahl: <span class="ok">' + zahl + '</span>');
+
+  // GEDÄCHTNIS WIRKT HIER
+  const moduliert = neuerEingang(zahl);
+  if(moduliert !== zahl){
+    aus('  <span class="tr">→ gedächtnis mischt:</span> ' +
+        zahl + ' → <span class="ok">' + moduliert + '</span>');
+  } else {
+    aus('  <span class="dim">→ kein gedächtnis: bleibt ' + zahl + '</span>');
+  }
+
+  return drei(moduliert, wert);
+}
+
+function drei(zahl, original){
+  markiere('3', 'aktiv');
+  aus('');
+  aus('<span class="kopf">▸ 3 · startpunkt</span>');
+  aus('  was ist da? <span class="tr">' + original + '</span>');
+
+  const a = zahl;
+  const b = zahl * 3;
+  const c = zahl * 9;
+
+  aus('  3 fäden: <span class="ok">' + a + ' · ' + b + ' · ' + c + '</span>');
+
+  return neun(a, b, c, original);
+}
+
+function neun(a, b, c, original){
+  markiere('9', 'aktiv');
+  aus('');
+  aus('<span class="kopf">▸ 9 · verdichtung</span>');
+  aus('  3 × 3 · jede kombination');
+
+  const felder = [];
+  [a, b, c].forEach(function(x, i){
+    [a, b, c].forEach(function(y, j){
+      felder.push({
+        nr: i*3 + j + 1,
+        von: x,
+        nach: y,
+        wert: (x + y) % 999
+      });
+    });
+  });
+
+  felder.forEach(function(f){
+    aus('  ' + String(f.nr).padStart(2, '0') + '. ' +
+        f.von + ' × ' + f.nach + ' → <span class="ok">' + f.wert + '</span>');
+  });
+
+  return einundachtzig(felder, original);
+}
+
+function einundachtzig(felder, original){
+  markiere('81', 'aktiv');
+  aus('');
+  aus('<span class="kopf">▸ 81 · vollmatrix</span>');
+  aus('  9 × 9 · das ganze netz');
+
+  const knoten = [];
+  for(let i = 0; i < 81; i++){
+    const f = felder[i % 9];
+    const pos = Math.floor(i / 9) + 1;
+    knoten.push({
+      nr: i + 1,
+      pos: pos,
+      basis: f.wert,
+      wert: (f.wert * pos) % 999
+    });
+  }
+
+  aus('  knoten gesamt: <span class="ok">' + knoten.length + '</span>');
+  aus('  beispiele:');
+  [0, 8, 40, 80].forEach(function(i){
+    const k = knoten[i];
+    aus('    #' + String(k.nr).padStart(2, '0') +
+        ' (pos ' + k.pos + ') ' +
+        'basis ' + k.basis + ' → <span class="ok">' + k.wert + '</span>');
+  });
+
+  return dreiZurueck(knoten, original);
+}
+
+function dreiZurueck(knoten, original){
+  markiere('3zurueck', 'aktiv');
+  aus('');
+  aus('<span class="kopf">▸ 3 ↺ · rückkehr</span>');
+
+  let summe = 0, max = 0;
+  knoten.forEach(function(k){
+    summe += k.wert;
+    if(k.wert > max) max = k.wert;
+  });
+  const mittel = Math.round(summe / knoten.length);
+
+  aus('  summe: <span class="ok">' + summe + '</span>');
+  aus('  mittel: <span class="ok">' + mittel + '</span>');
+  aus('  max: <span class="ok">' + max + '</span>');
+
+  return versand({
+    original: original,
+    summe: summe,
+    mittel: mittel,
+    max: max,
+    knoten: knoten.length
+  });
+}
+
+function versand(ergebnis){
+  markiere('versand', 'aktiv');
+  aus('');
+  aus('<span class="kopf">▸ versand</span>  nach außen');
+  aus('  summe:  <span class="ok">' + ergebnis.summe + '</span>');
+  aus('  mittel: <span class="ok">' + ergebnis.mittel + '</span>');
+  aus('  max:    <span class="ok">' + ergebnis.max + '</span>');
+
+  markiereAlleFertig();
+
+  // ============================================================
+  // GEDÄCHTNIS SPEICHERN — hier wird Konsequenz
+  // ============================================================
+  const s = schrauben();
+  const neuerMittel = Math.round(
+    ergebnis.mittel * (1 - s.daempf)
+  );
+  const neuerMax = Math.round(
+    ergebnis.max * (1 - s.daempf)
+  );
+
+  letzterAusgang = {
+    summe: ergebnis.summe,
+    mittel: neuerMittel,
+    max: neuerMax
+  };
+
+  aus('');
+  aus('<span class="tr">→ wirklichkeit: gespeichert.</span>');
+  aus('  <span class="dim">dämpfung ' + s.daempf.toFixed(2) +
+      ' → nächster eingang wird beeinflusst.</span>');
+
+  gedaechtnisAnzeigen();
+  schraubenUpdate();
+
+  return {
+    eingang: ergebnis.original,
+    ausgang: {
+      summe: ergebnis.summe,
+      mittel: ergebnis.mittel,
+      max: ergebnis.max
+    }
+  };
+}
+
+// ============================================================
+// GEDÄCHTNIS ANZEIGEN
+// ============================================================
+function gedaechtnisAnzeigen(){
+  const box = $('ged-inhalt');
+  if(!letzterAusgang){
+    box.innerHTML = '<span class="leer">noch kein lauf. drück start.</span>';
+    return;
+  }
+  box.innerHTML =
+    'summe: <b>' + letzterAusgang.summe + '</b> · ' +
+    'mittel: <b>' + letzterAusgang.mittel + '</b> · ' +
+    'max: <b>' + letzterAusgang.max + '</b><br>' +
+    '<span class="dim">dieser stand beeinflusst den nächsten eingang</span>';
+}
+
+// ============================================================
+// LAUF
+// ============================================================
+const lauf = {
+  start: function(){
+    log.innerHTML = '';
+    markiereAlleLeer();
+    durchlauf++;
+    stD.textContent = durchlauf;
+
+    const raw = $('in').value.trim() || '7';
+
+    linie();
+    aus('<span class="tr">durchlauf #' + durchlauf + '</span>  ' +
+        '<span class="dim">' + new Date().toLocaleTimeString() + '</span>');
+    linie();
+    aus('');
+
+    const ergebnis = empfang(raw);
+
+    aus('');
+    linie();
+    aus('<span class="kopf">ergebnis:</span>');
+    aus('  eingang:  <span class="tr">' + ergebnis.eingang + '</span>');
+    aus('  ausgang:  ' +
+        '<span class="ok">summe=' + ergebnis.ausgang.summe +
+        ' mittel=' + ergebnis.ausgang.mittel +
+        ' max=' + ergebnis.ausgang.max + '</span>');
+    linie();
+  },
+
+  auto: function(){
+    // 10× hintereinander — der eingang bleibt, aber das gedächtnis wirkt
+    log.innerHTML = '';
+    markiereAlleLeer();
+    durchlauf = 0;
+
+    const roh = $('in').value.trim() || '7';
+
+    linie();
+    aus('<span class="tr">AUTO · 10 durchläufe</span>  ' +
+        '<span class="dim">eingang bleibt "' + roh + '"</span>');
+    linie();
+
+    for(let i = 0; i < 10; i++){
+      durchlauf++;
+      stD.textContent = durchlauf;
+      markiereAlleLeer();
+      aus('');
+      aus('<span class="tr"># ' + durchlauf + '</span>');
+      empfang(roh);
+      aus('');
+    }
+
+    linie();
+    aus('<span class="kopf">nach 10 läufen:</span>');
+    if(letzterAusgang){
+      aus('  gedächtnis: mittel=<span class="ok">' +
+          letzterAusgang.mittel + '</span>, max=<span class="ok">' +
+          letzterAusgang.max + '</span>');
+    }
+    linie();
+  },
+
+  reset: function(){
+    log.innerHTML = '<span class="dim">warte auf eingabe…</span>';
+    markiereAlleLeer();
+    durchlauf = 0;
+    letzterAusgang = null;
+    stD.textContent = 0;
+    stS.textContent = '–';
+    gedaechtnisAnzeigen();
+    schraubenUpdate();
+  }
+};
+
+// ============================================================
+// SCHRAUBEN LIVE
+// ============================================================
+['s-roh', 's-mittel', 's-max', 's-daempf'].forEach(function(id){
+  $(id).addEventListener('input', schraubenUpdate);
+});
+
+// ============================================================
+// START
+// ============================================================
+window.lauf = lauf;
+window.schrauben = schrauben;
+
+schraubenUpdate();
+gedaechtnisAnzeigen();
+
+})();
+</script>
+</body>
+</html>
