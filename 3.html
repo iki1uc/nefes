@@ -3,52 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>٣ — der Raum</title>
+<title>٣ — der Raum · uc</title>
 <style>
   html,body{margin:0;height:100%;background:#0a0a14;overflow:hidden;
             font-family:sans-serif;color:#eee}
   canvas{display:block;width:100vw;height:100vh}
-  /* Legende — schnell erfassbar, arabisch nummeriert */
   #legende{
     position:fixed;top:10px;left:10px;
-    background:rgba(10,10,20,0.75);
+    background:rgba(10,10,20,0.8);
     border:1px solid #1a1a2a;border-radius:4px;
-    padding:8px 12px;font-size:12px;line-height:1.7;
-    pointer-events:none;backdrop-filter:blur(2px)
+    padding:10px 14px;font-size:12px;line-height:1.8;
+    pointer-events:none;backdrop-filter:blur(2px);max-width:340px
   }
-  #legende b{color:#ffcc44}
-  #legende .ar{color:#5fc8ff;font-size:14px}
-  #legende .maya{color:#00ffaa}
-  #legende .inka{color:#ff0066}
-  /* Zustand — live, unten rechts */
+  #legende .zeile{margin:3px 0}
+  #legende .ar{color:#5fc8ff;font-size:14px;margin-right:4px}
+  #legende .tr{color:#ffcc44;font-weight:bold}
+  #legende .maya{color:#00ffaa;font-size:11px}
+  #legende .inka{color:#ff0066;font-size:11px}
+  #legende .pfeil{color:#888;font-size:11px;margin-top:6px;text-align:center}
   #zustand{
     position:fixed;bottom:10px;right:10px;
-    background:rgba(10,10,20,0.75);
+    background:rgba(10,10,20,0.8);
     border:1px solid #1a1a2a;border-radius:4px;
-    padding:6px 10px;font-size:11px;line-height:1.6;
+    padding:8px 12px;font-size:11px;line-height:1.7;
     pointer-events:none;text-align:right
   }
   #zustand b{color:#ffcc44}
+  #zustand .maya{color:#00ffaa}
+  #zustand .inka{color:#ff0066}
 </style>
 </head>
 <body>
 <canvas id="c3"></canvas>
 
-<!-- Legende: sofort sichtbar, alles auf einen Blick -->
 <div id="legende">
-  <div><span class="ar">١</span> <b>bir</b> — Punkt · Maya: Einheit</div>
-  <div><span class="ar">٢</span> <b>iki</b> — Gegenstück · Inka: Yanantin</div>
-  <div><span class="ar">٣</span> <b>uc</b> — Raum · Maya: Bewegung · Inka: Masintin</div>
-  <div style="margin-top:4px;font-size:11px;color:#888">
-    1 → 2 → 3 → 1
+  <div class="zeile">
+    <span class="ar">١</span>
+    <span class="tr">bir</span>
+    <span class="maya">· hun</span>
+    <span class="inka">· huk</span>
   </div>
+  <div class="zeile">
+    <span class="ar">٢</span>
+    <span class="tr">iki</span>
+    <span class="maya">· ka</span>
+    <span class="inka">· iskay</span>
+  </div>
+  <div class="zeile">
+    <span class="ar">٣</span>
+    <span class="tr">uc</span>
+    <span class="maya">· ox</span>
+    <span class="inka">· kimsa</span>
+  </div>
+  <div class="pfeil">1 → 2 → 3 → 1</div>
 </div>
 
-<!-- Zustand: live, ändert sich beim Laufen -->
 <div id="zustand">
   <div>art: <b id="z-art">–</b></div>
   <div>knoten: <b id="z-kn">–</b></div>
   <div>bez: <b id="z-bz">–</b></div>
+  <div>maya: <span class="maya" id="z-maya">–</span></div>
+  <div>inka: <span class="inka" id="z-inka">–</span></div>
   <div>t: <b id="z-t">0.0</b> s</div>
 </div>
 
@@ -57,22 +72,23 @@
 <script>
 // ============================================================
 // 3.html — der Raum
-// ١ bir · ٢ iki · ٣ uc
+// ١ bir · hun · huk
+// ٢ iki · ka  · iskay
+// ٣ uc  · ox  · kimsa
 // Maya (Zeit) und Inka (Raum) im Wechsel.
-// uc.js montet sich selbst auf #c3.
 // ============================================================
 
-// Fallback, wenn uc.js fehlt
 if (!window.üç) {
   console.warn('uc.js fehlt — prüfe Pfad');
 }
 
-// Zustand live anzeigen — schnell erfassbar
 (function anzeige(){
-  const art = document.getElementById('z-art');
-  const kn  = document.getElementById('z-kn');
-  const bz  = document.getElementById('z-bz');
-  const t   = document.getElementById('z-t');
+  const art  = document.getElementById('z-art');
+  const kn   = document.getElementById('z-kn');
+  const bz   = document.getElementById('z-bz');
+  const maya = document.getElementById('z-maya');
+  const inka = document.getElementById('z-inka');
+  const t    = document.getElementById('z-t');
   if (!art) return;
 
   const start = (window.performance && performance.now)
@@ -84,9 +100,11 @@ if (!window.üç) {
     if (window.üç && window.üç.klar) {
       const k = window.üç.klar();
       art.textContent = k.art || '–';
-      kn.textContent = Object.keys(window.üç.knoten || {}).length;
-      bz.textContent = (window.üç.beziehungen || [])
+      kn.textContent  = Object.keys(window.üç.knoten || {}).length;
+      bz.textContent  = (window.üç.beziehungen || [])
         .filter(b => b.aktiv).length;
+      maya.textContent = k.maya || '–';
+      inka.textContent = k.inka || '–';
     }
     t.textContent = ((now() - start) / 1000).toFixed(1);
     requestAnimationFrame(tick);
