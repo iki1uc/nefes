@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>nefes@kup:~$</title>
+<style>
+  html,body{margin:0;height:100%;background:#000;color:#00ffaa;
+            font-family:'Courier New',monospace;font-size:14px;
+            overflow:hidden}
+  #term{position:fixed;inset:0;padding:18px;display:flex;
+        flex-direction:column;overflow:hidden}
+  #out{flex:1;white-space:pre-wrap;line-height:1.5;
+       overflow-y:auto;padding-right:8px}
+  #line{display:flex;align-items:center;margin-top:8px;
+        border-top:1px solid #0a2a1a;padding-top:8px}
+  #prompt{color:#ffcc44;margin-right:8px;white-space:nowrap}
+  #in{flex:1;background:transparent;border:none;outline:none;
+      color:#00ffaa;font-family:inherit;font-size:inherit;
+      caret-color:#ffcc44}
+  .maya{color:#00ffaa}
+  .inka{color:#ff0066}
+  .tr{color:#ffcc44}
+  .dim{color:#555}
+  .err{color:#ff0066}
+  .kup{color:#5fc8ff}
+  .ok{color:#00ffaa}
+  #breath{position:fixed;top:12px;right:14px;
+          background:rgba(0,0,0,0.7);border:1px solid #0a2a1a;
+          padding:6px 12px;border-radius:4px;font-size:11px;
+          color:#ffcc44;letter-spacing:1px}
+  #breath .dot{color:#0a2a1a}
+  #breath .dot.on{color:#00ffaa}
+  #breath .lbl{color:#5fc8ff}
+</style>
+</head>
+<body>
+<div id="breath">
+  <span class="lbl">nefes</span>
+  <span id="bstate">–</span>
+  <span id="bdots">●●●●●●●●</span>
+</div>
+
+<div id="term">
+  <div id="out"></div>
+  <div id="line">
+    <span id="prompt">nefes@kup:~$</span>
+    <input id="in" autocomplete="off" autofocus spellcheck="false">
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+const out = document.getElementById('out');
+const inp = document.getElementById('in');
+const bstate = document.getElementById('bstate');
+const bdots = document.getElementById('bdots');
+
+const state = {
+  breathPhase: 0,
+  breathPeriod: 8,
+  breathing: true,
+  history: [],
+  histIdx: -1,
+  voices: ['maya', 'inka']
+};
+
+// ---------------- Breath-Loop ----------------
+let last = performance.now();
+function tick(now){
+  const dt = (now - last) / 1000;
+  last = now;
+  if(state.breathing){
+    state.breathPhase = (state.breathPhase + dt) % state.breathPeriod;
+  }
+  const p = state.breathPhase / state.breathPeriod;
+  const v = p < 0.5 ? p*2 : (1-p)*2;
+  const phase = p < 0.5 ? 'al' : 'ver';
+  const n = Math.round(v * 8);
+  bstate.textContent = phase;
+  let s = '';
+  for(let i=0;i<8;i++) s += '<span class="dot '+(i<n?'on':'')+'">●</span>';
+  bdots.innerHTML = s;
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+// ---------------- Print ----------------
+function print(html, cls){
+  const d = document.createElement('div');
+  if(cls) d.className = cls;
+  d.innerHTML = html;
+  out.appendChild(d);
+  out.scrollTop = out.scrollHeight;
+}
+function raw(t){ print(t); }
+function maya(t){ print('<span class="maya">[maya]</span> '+t); }
+function inka(t){ print('<span class="inka">[inka]</span> '+t); }
+function sys(t){ print('<span class="dim">'+t+'</span>'); }
+function err(t){ print('<span class="err">'+t+'</span>'); }
+
+// ---------------- Banner ----------------
+print('<span class="tr">NEFES</span> <span class="dim">· bash · iki ses · dört göz</span>');
+print('<span class="dim">yaz: </span><span class="tr">yardim</span><span class="dim"> · başlamak için</span>');
+print('');
+
+// ---------------- Cube (ASCII) ----------------
+const KUP = [
+'    <span class="kup">●─────●</span>',
+'   <span class="kup">/│    /│</span>',
+'  <span class="kup">●─────● │</span>',
+'  <span class="kup">│ ●───│─●</span>',
+'  <span class="kup">│/    │/</span>',
+'  <span class="kup">●─────●</span>'
+].join('\n');
+
+// ---------------- Commands ----------------
+function cmd3(){
+  print('<span class="tr">3 · üç ses</span>');
+  print('');
+  print('  <span class="maya">● maya</span>   ·  ik\'    ·  içeride kalır');
+  print('  <span class="inka">● inka</span>   ·  samay  ·  dışarı yayılır');
+  print('  <span class="tr">● sen</span>    ·  sen    ·  buradasın');
+  print('');
+  sys('  1 nefes → 3 ses → 9 kelime → 81 anlam');
+}
+
+function cmd9(){
+  print('<span class="tr">9 · 3 × 3</span>  <span class="dim">(3 → 9 pflanzung)</span>');
+  print('');
+  const V = ['maya','inka','sen'];
+  let n = 1;
+  for(const a of V){
+    for(const b of V){
+      const cls = a==='maya'?'maya':(a==='inka'?'inka':'tr');
+      print('  <span class="'+cls+'">'+n+'.</span> '+a+' × '+b);
+      n++;
+    }
+  }
+  print('');
+  sys('  her ses her sesle konuşur → 9 diyalog');
+}
+
+function cmd81(){
+  print('<span class="tr">81 · 9 × 9</span>  <span class="dim">(tam ağ · universal)</span>');
+  print('');
+  const V = ['maya','inka','sen'];
+  let row = '';
+  for(let i=1;i<=9;i++){
+    const a = V[(i-1)%3], b = V[Math.floor((i-1)/3)];
+    const cls = a==='maya'?'maya':(a==='inka'?'inka':'tr');
+    row += '<span class="'+cls+'">'+String(i).padStart(2,' ')+'</span>  ';
+    if(i%3===0){ print('  '+row); row=''; }
+  }
+  print('');
+  sys('  her satır 9. 9 satır 81. hepsi bir.');
+  print('');
+  print('  <span class="dim">geri dönüş:</span> <span class="tr">3</span> <span class="dim">yaz → başa dön</span>');
+}
+
+function cmdNefes(){
+  print('<span class="tr">nefes · 4 al · 4 ver</span>');
+  print('');
+  maya('içeri al. tut.');
+  inka('dışarı ver. bekle.');
+  maya('küp seninle büyür.');
+  inka('küp seninle küçülür.');
+  print('');
+  sys('  köşede gösterge: al / ver');
+  sys('  durdurmak için: dur');
+}
+
+function cmdKup(){
+  print(KUP);
+  print('');
+  sys('  ● 8 atom · 12 kenar · 6 yüz');
+  sys('  3 ses · 4 göz · 1 nefes');
+}
+
+function cmdSor(args){
+  const frage = args.join(' ').trim() || '(boş)';
+  print('<span class="tr">sor:</span> '+frage);
+  print('');
+  // 4-Augen: beide Stimmen antworten
+  const hash = [...frage].reduce((h,c)=>h+c.charCodeAt(0),0);
+  const M = [
+    'içeride kalır. cevap sende.',
+    'nefes yeter. kelime değil.',
+    'sus. dinle. kal.',
+    'bu bir soru değil, davet.',
+    'zen: cevap yoksa soru da yok.'
+  ];
+  const I = [
+    'dışarı yayılır. yankı döner.',
+    'gözler açık. kulak açık.',
+    'konuş. sonra bırak.',
+    'dört göz görür, iki göz görmez.',
+    'aura: cevap ışık olur.'
+  ];
+  maya(M[hash % M.length]);
+  inka(I[hash % I.length]);
+  print('');
+  sys('  4 göz · iki ses · bir soru');
+}
+
+function cmdDur(){
+  state.breathing = !state.breathing;
+  if(state.breathing){
+    sys('nefes: devam');
+  } else {
+    sys('nefes: durdu');
+  }
+}
+
+function cmdTemizle(){
+  out.innerHTML = '';
+}
+
+function cmdKim(){
+  print('<span class="tr">kim:</span>');
+  print('  <span class="maya">maya</span> · ik\' · sol göz · içeride kalır');
+  print('  <span class="inka">inka</span> · samay · sağ göz · dışarı yayılır');
+  print('  <span class="tr">sen</span>  · sen · buradasın · üçüncü ses');
+  print('');
+  sys('  dört göz: iki ses × iki yön');
+}
+
+function cmdYardim(){
+  print('<span class="tr">komutlar</span>');
+  print('  <span class="maya">3</span>          üç ses');
+  print('  <span class="maya">9</span>          3 × 3 · pflanzung');
+  print('  <span class="maya">81</span>         9 × 9 · tam ağ');
+  print('  <span class="maya">nefes</span>      atem · 4 al · 4 ver');
+  print('  <span class="maya">kup</span>        küp · ascii');
+  print('  <span class="maya">sor</span> &lt;frage&gt; dört göz · cevap');
+  print('  <span class="maya">dur</span>        nefes durdur / devam');
+  print('  <span class="maya">kim</span>        kim konuşuyor');
+  print('  <span class="maya">temizle</span>    ekranı temizle');
+  print('');
+  sys('  ok tuşları: geçmiş · ESC: temizle');
+}
+
+// ---------------- Eingabe ----------------
+function run(line){
+  const parts = line.trim().split(/\s+/);
+  const c = (parts[0]||'').toLowerCase();
+  const args = parts.slice(1);
+  if(!c) return;
+  switch(c){
+    case '3':          cmd3(); break;
+    case '9':          cmd9(); break;
+    case '81':         cmd81(); break;
+    case 'nefes':      cmdNefes(); break;
+    case 'kup': case 'küp': cmdKup(); break;
+    case 'sor':        cmdSor(args); break;
+    case 'dur':        cmdDur(); break;
+    case 'kim':        cmdKim(); break;
+    case 'temizle': case 'clear': cmdTemizle(); break;
+    case 'yardim': case 'help': case '?': cmdYardim(); break;
+    default:           err('bilinmeyen komut: '+c+'  →  yardim');
+  }
+  print('');
+}
+
+inp.addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){
+    const line = inp.value;
+    print('<span class="tr">nefes@kup:~$</span> '+line);
+    if(line.trim()){
+      state.history.push(line);
+      state.histIdx = state.history.length;
+    }
+    inp.value = '';
+    run(line);
+  } else if(e.key === 'ArrowUp'){
+    if(state.histIdx > 0){
+      state.histIdx--;
+      inp.value = state.history[state.histIdx] || '';
+    }
+    e.preventDefault();
+  } else if(e.key === 'ArrowDown'){
+    if(state.histIdx < state.history.length - 1){
+      state.histIdx++;
+      inp.value = state.history[state.histIdx] || '';
+    } else {
+      state.histIdx = state.history.length;
+      inp.value = '';
+    }
+    e.preventDefault();
+  } else if(e.key === 'Escape'){
+    cmdTemizle();
+    inp.value = '';
+    e.preventDefault();
+  }
+});
+
+// Klick irgendwohin → focus
+document.addEventListener('click', function(){ inp.focus(); });
+
+})();
+</script>
+</body>
+</html>
