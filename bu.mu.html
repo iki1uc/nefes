@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>nefes@kup:~$</title>
+<style>
+  html,body{margin:0;height:100%;background:#000;color:#00ffaa;
+            font-family:'Courier New',monospace;font-size:14px;
+            overflow:hidden}
+  #term{position:fixed;inset:0;padding:20px;overflow-y:auto;
+        display:flex;flex-direction:column}
+  #out{flex:1;white-space:pre-wrap;line-height:1.5}
+  #line{display:flex;align-items:center;margin-top:8px}
+  #prompt{color:#ffcc44;margin-right:8px;white-space:nowrap}
+  #in{flex:1;background:transparent;border:none;outline:none;
+      color:#00ffaa;font-family:inherit;font-size:inherit;
+      caret-color:#ffcc44}
+  .maya{color:#00ffaa}
+  .inka{color:#ff0066}
+  .tr{color:#ffcc44}
+  .dim{color:#555}
+  .err{color:#ff0066}
+  .kup{color:#5fc8ff;white-space:pre;line-height:1.1}
+</style>
+</head>
+<body>
+<div id="term">
+  <div id="out"></div>
+  <div id="line">
+    <span id="prompt">nefes@kup:~$</span>
+    <input id="in" autocomplete="off" autofocus>
+  </div>
+</div>
+<script>
+// ...
+</script>
+</body>
+</html>
