@@ -1,0 +1,24 @@
+<canvas id="c"></canvas>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d'); // 2D, nicht webgl
+
+function draw() {
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, c.width, c.height);
+  // dein Atem, dein Anker, dein Nefes
+}
+
+async function online() {
+  if (!navigator.onLine) return;
+  try {
+    const r = await fetch('/api/klarung');
+    const d = await r.json();
+    // Echtzeit-Klärung
+  } catch (e) {}
+}
+
+window.addEventListener('online', online);
+window.addEventListener('offline', () => {});
+draw();
+</script>
