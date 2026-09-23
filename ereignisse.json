@@ -1,0 +1,305 @@
+{
+  "meta": {
+    "stadt": "Hamburg",
+    "version": "1.0",
+    "regel": "kein Konsum · kein Zwang · freiwillig · friedfertig",
+    "radius": [50, 100],
+    "einheit": "km"
+  },
+
+  "grenzen": [
+    {
+      "id": "hbf",
+      "name": "Hamburg Hauptbahnhof",
+      "art": "Knoten",
+      "fame": "höchste · alle Linien",
+      "reichweite": "100 km",
+      "koord": [53.5528, 10.0067],
+      "nachbar": ["dammtor", "altona", "landungsbruecken"],
+      "charakter": "Ankunft · Übergang · Treffpunkt"
+    },
+    {
+      "id": "dammtor",
+      "name": "Hamburg Dammtor",
+      "art": "Schwelle",
+      "fame": "mittel · Messe · Uni · Planten",
+      "reichweite": "50 km",
+      "koord": [53.5612, 9.9897],
+      "nachbar": ["hbf", "altona"],
+      "charakter": "Übergang · Bildung · Grün"
+    },
+    {
+      "id": "altona",
+      "name": "Hamburg Altona",
+      "art": "Tor West",
+      "fame": "hoch · S-Bahn · Fernbahn",
+      "reichweite": "100 km",
+      "koord": [53.5526, 9.9352],
+      "nachbar": ["hbf", "dammtor", "landungsbruecken"],
+      "charakter": "Ausgang · Hafen · Westen"
+    },
+    {
+      "id": "landungsbruecken",
+      "name": "Landungsbrücken",
+      "art": "Ufer",
+      "fame": "hoch · Elbe · Hafen",
+      "reichweite": "50 km",
+      "koord": [53.5460, 9.9688],
+      "nachbar": ["altona", "hbf"],
+      "charakter": "Wasser · Weite · Blick"
+    }
+  ],
+
+  "ereignisse": [
+    {
+      "id": "e001",
+      "name": "Tausch-Markt",
+      "art": "Geben und Nehmen",
+      "grenze": ["hbf", "altona"],
+      "radius": 50,
+      "wiederkehr": "monatlich · erster Samstag",
+      "was": "Jeder bringt, was er nicht braucht. Jeder nimmt, was er braucht. Kein Geld.",
+      "dauer": "3 Stunden",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e002",
+      "name": "Samen-Tausch",
+      "art": "Geben und Nehmen",
+      "grenze": ["dammtor"],
+      "radius": 50,
+      "wiederkehr": "jährlich · März",
+      "was": "Gärtner bringen Samen, Stecklinge, Wissen. Pflanzen wechseln den Ort.",
+      "dauer": "4 Stunden",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e003",
+      "name": "Reparatur-Café",
+      "art": "Geben und Nehmen",
+      "grenze": ["altona", "hbf"],
+      "radius": 50,
+      "wiederkehr": "monatlich · zweiter Sonntag",
+      "was": "Kaputtes wird ganz. Werkzeug da. Wissen geteilt. Keine Rechnung.",
+      "dauer": "5 Stunden",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e004",
+      "name": "Foto-Spaziergang für Kinder",
+      "art": "Zeigen und Schauen",
+      "grenze": ["dammtor", "landungsbruecken"],
+      "radius": 50,
+      "wiederkehr": "monatlich · Frühling bis Herbst",
+      "was": "Kinder fotografieren Pflanzen. Eltern schauen. Kein Wettbewerb.",
+      "dauer": "2 Stunden",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e005",
+      "name": "Erzähl-Bank",
+      "art": "Zeigen und Schauen",
+      "grenze": ["landungsbruecken"],
+      "radius": 50,
+      "wiederkehr": "wöchentlich · Sonntag",
+      "was": "Eine Bank. Ein Mensch erzählt. Andere hören. Kein Mikrofon, keine Bühne.",
+      "dauer": "1 Stunde",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e006",
+      "name": "Kunst-Weg",
+      "art": "Zeigen und Schauen",
+      "grenze": ["hbf", "dammtor", "altona"],
+      "radius": 50,
+      "wiederkehr": "jährlich · Sommer",
+      "was": "Werke am Weg. Zwischen den Stationen. Wer will, bleibt stehen.",
+      "dauer": "1 Tag",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e007",
+      "name": "Gemeinschafts-Garten",
+      "art": "Zusammen tun",
+      "grenze": ["altona", "dammtor"],
+      "radius": 50,
+      "wiederkehr": "täglich · offen",
+      "was": "Ein Fleck Erde. Jeder darf pflanzen. Jeder darf ernten. Kein Besitz.",
+      "dauer": "immer",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e008",
+      "name": "Müll-Sammeln am Ufer",
+      "art": "Zusammen tun",
+      "grenze": ["landungsbruecken", "altona"],
+      "radius": 50,
+      "wiederkehr": "monatlich · erster Sonntag",
+      "was": "Zusammen gehen. Zusammen sammeln. Danach Tee. Kein Lob, keine Strafe.",
+      "dauer": "2 Stunden",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e009",
+      "name": "Suppen-Küche",
+      "art": "Zusammen tun",
+      "grenze": ["hbf"],
+      "radius": 50,
+      "wiederkehr": "wöchentlich · Mittwoch",
+      "was": "Jeder bringt eine Zutat. Daraus wird eine Suppe. Alle essen.",
+      "dauer": "3 Stunden",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e010",
+      "name": "Nachbarschafts-Frühstück",
+      "art": "Zusammen tun",
+      "grenze": ["dammtor", "altona"],
+      "radius": 50,
+      "wiederkehr": "monatlich · letzter Sonntag",
+      "was": "Wer da ist, ist da. Kein Programm. Nur Brot, Kaffee, Stille.",
+      "dauer": "2 Stunden",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e011",
+      "name": "Sternen-Nacht",
+      "art": "Natur erleben",
+      "grenze": ["altona"],
+      "radius": 100,
+      "wiederkehr": "jährlich · August",
+      "was": "Dunkler Ort. Decken. Schauen. Kein Teleskop nötig. Kein Wissen nötig.",
+      "dauer": "3 Stunden",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e012",
+      "name": "Vogel-Stimmen am Morgen",
+      "art": "Natur erleben",
+      "grenze": ["dammtor", "landungsbruecken"],
+      "radius": 50,
+      "wiederkehr": "wöchentlich · Samstag früh",
+      "was": "Vor Sonnenaufgang. Zuhören. Zählen. Nicht bestimmen müssen.",
+      "dauer": "1 Stunde",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e013",
+      "name": "Kräuter-Wanderung",
+      "art": "Natur erleben",
+      "grenze": ["altona", "hbf"],
+      "radius": 100,
+      "wiederkehr": "monatlich · Mai bis September",
+      "was": "Wer kennt, führt. Wer nicht kennt, lernt. Pflücken, riechen, schmecken.",
+      "dauer": "3 Stunden",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e014",
+      "name": "Sonnenwende-Feuer",
+      "art": "Natur erleben",
+      "grenze": ["landungsbruecken", "altona"],
+      "radius": 50,
+      "wiederkehr": "jährlich · 21. Juni & 21. Dezember",
+      "was": "Feuer am Wasser. Kein Fest. Kein Verkauf. Nur Wärme und Licht.",
+      "dauer": "4 Stunden",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e015",
+      "name": "Erinnerungs-Fest",
+      "art": "Erinnern und Weitergeben",
+      "grenze": ["hbf"],
+      "radius": 50,
+      "wiederkehr": "jährlich · November",
+      "was": "Alte Fotos. Alte Wege. Wer will, erzählt. Wer will, hört.",
+      "dauer": "1 Tag",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e016",
+      "name": "Übergabe-Fest",
+      "art": "Erinnern und Weitergeben",
+      "grenze": ["dammtor"],
+      "radius": 50,
+      "wiederkehr": "jährlich · Oktober",
+      "was": "Alt gibt an jung. Werkzeug. Wissen. Rezept. Kein Geld.",
+      "dauer": "1 Tag",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e017",
+      "name": "Was-war-Fest",
+      "art": "Erinnern und Weitergeben",
+      "grenze": ["altona", "hbf", "landungsbruecken"],
+      "radius": 100,
+      "wiederkehr": "jährlich · September",
+      "was": "Alte Häuser. Alte Wege. Alte Gerüche. Spaziergang mit Geschichten.",
+      "dauer": "1 Tag",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e018",
+      "name": "Klang-Fest",
+      "art": "Klang und Stille",
+      "grenze": ["hbf", "dammtor"],
+      "radius": 50,
+      "wiederkehr": "monatlich · dritter Sonntag",
+      "was": "Jeder bringt ein Instrument. Auch Stimme. Auch Stille. Kein Programm.",
+      "dauer": "3 Stunden",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e019",
+      "name": "Stille-Stunde",
+      "art": "Klang und Stille",
+      "grenze": ["dammtor"],
+      "radius": 50,
+      "wiederkehr": "wöchentlich · Donnerstag",
+      "was": "Sitzen. Atmen. Nichts. Kein Wort. Kein Handy.",
+      "dauer": "1 Stunde",
+      "zwang": false,
+      "konsum": false
+    },
+    {
+      "id": "e020",
+      "name": "Erzähl-Café",
+      "art": "Klang und Stille",
+      "grenze": ["altona", "landungsbruecken"],
+      "radius": 50,
+      "wiederkehr": "wöchentlich · Dienstag",
+      "was": "Ein Tisch. Eine Frage. Jeder antwortet. Kein Protokoll.",
+      "dauer": "2 Stunden",
+      "zwang": false,
+      "konsum": false
+    }
+  ],
+
+  "regeln": {
+    "kein_zwang": "Niemand muss kommen. Niemand muss bleiben.",
+    "kein_konsum": "Nichts wird verkauft. Nichts wird gekauft.",
+    "freiwillig": "Wer da ist, ist freiwillig da.",
+    "friedfertig": "Kein Abbruch. Kein Streit. Kein Urteil.",
+    "wiederkehr": "Alles kommt wieder. Aber nichts muss.",
+    "reichweite": "50 km = nah. 100 km = fern. Mehr nicht.",
+    "kalender": "Wartet. Fragt nicht. Zeigt nur, wenn du willst."
+  }
+}
