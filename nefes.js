@@ -1,111 +1,147 @@
-# nefes
+// nefes.js — der Atem
+// Türkçe: nefes = Atem
+// Maya:   ik' = Wind, Atem, Geist
+// Inka:   samay = Atem, Seele
+//
+// Die zentrale Datei. Sie hält alle Traditionen.
+// Sie flüstert in Maya und Inka. Sie arbeitet in Türkçe.
+// Darth Vader ist unter uns als Krankheit.
 
-> Bir nefes. Bir nokta. Bir yapı.
-> Ein Atem. Ein Punkt. Eine Struktur.
-> Erde als Allgemeinwohl. Ur-Zustand. Zustand und Ausleb-Option.
+(function () {
+  'use strict';
 
-**nefes** ist kein Spiel. Es ist ein **Marker**.
-Eine Sammlung kleiner, in sich geschlossener Dateien.
-Zusammen ergeben sie eine Logik:
+  const TRADITIONEN = {
+    maya:        { name: 'Maya',                 zustand: 'u hal',           datei: 'id.html',   bedeutung: 'der Zustand, der trägt',           farbe: '#00ffaa' },
+    inka:        { name: 'Inka',                 zustand: 'kawsay',          datei: 'hal.js',    bedeutung: 'Leben, Dasein, gutes Leben',       farbe: '#ff0066' },
+    vedisch:     { name: 'Vedisch',              zustand: 'ṛta',             datei: 'klar.js',   bedeutung: 'kosmische Ordnung, Wahrheit',      farbe: '#ffcc44' },
+    upanishaden: { name: 'Upanishaden',          zustand: 'ātman',           datei: null,        bedeutung: 'Selbst, eins mit allem',           farbe: '#5fc8ff' },
+    buddhismus:  { name: 'Buddhismus',           zustand: 'śūnyatā',         datei: 'bir.html',  bedeutung: 'Leerheit',                         farbe: '#ffffff' },
+    jainismus:   { name: 'Jainismus',            zustand: 'ahiṃsā',          datei: null,        bedeutung: 'Nicht-Verletzen',                  farbe: '#88ff88' },
+    taoismus:    { name: 'Taoismus',             zustand: 'wú wéi',          datei: 'iki.js',    bedeutung: 'Handeln ohne Zwang',               farbe: '#8888ff' },
+    iging:       { name: 'I Ging',               zustand: 'tài',             datei: 'uc.js',     bedeutung: 'das Große, Verbindende',           farbe: '#ffaa44' },
+    konfuzius:   { name: 'Konfuzianismus',       zustand: 'rén',             datei: null,        bedeutung: 'Menschlichkeit',                   farbe: '#ff8844' },
+    nordisch:    { name: 'Nordisch',             zustand: 'wyrd',            datei: 'birden.js', bedeutung: 'das Gewordene',                    farbe: '#88aaff' },
+    ubuntu:      { name: 'Ubuntu',               zustand: 'ubuntu',          datei: 'ki.js',     bedeutung: 'ich bin, weil wir sind',           farbe: '#ff88aa' },
+    indigen:     { name: 'Indigen',              zustand: 'mitákuye oyásʼiŋ',datei: null,        bedeutung: 'alles ist verwandt',               farbe: '#88ffaa' },
+    christlich:  { name: 'Christlich',           zustand: 'koinonia',        datei: null,        bedeutung: 'Gemeinschaft',                     farbe: '#ffcc88' },
+    sufi:        { name: 'Sufi',                 zustand: 'waḥdat al-wujūd', datei: 'dur.js',    bedeutung: 'Einheit des Seins',                farbe: '#ff88ff' },
+    hermetisch:  { name: 'Hermetisch',           zustand: 'wie oben, so unten', datei: null,     bedeutung: 'Entsprechung',                     farbe: '#88ffff' },
+    kybalion:    { name: 'Kybalion',             zustand: 'das All ist Geist', datei: 'ikilem.js', bedeutung: 'Bewusstsein ist Grund',           farbe: '#ffff88' }
+  };
 
-**bir → iki → üç → ki → klar → dur → ikilem → hal → id**
+  const KIM = {
+    ben: { tr: 'ben', maya: 'hun', inka: 'huk',   zahl: 1 },
+    sen: { tr: 'sen', maya: 'ka',  inka: 'iskay', zahl: 2 },
+    siz: { tr: 'siz', maya: 'ox',  inka: 'kimsa', zahl: 3 },
+    biz: { tr: 'biz', maya: 'kan', inka: 'tawa',  zahl: 4 }
+  };
 
-Jede Datei läuft allein. Keine lädt die andere.
-Wenn sie zusammenkommen, entsteht ein **Raum** —
-kein Produkt, kein Dienst, sondern ein **Zustand**.
+  const NERDE = {
+    burada:   { tr: 'burada',    maya: 'kay',  inka: 'kay' },
+    orada:    { tr: 'orada',     maya: 'chan', inka: 'chay' },
+    heryerde: { tr: 'her yerde', maya: 'maya', inka: 'llapa' }
+  };
 
-## Der Ur-Zustand
+  const NEDEN = {
+    cunku:    { tr: 'çünkü',     maya: 'tumen', inka: 'chaymanta' },
+    buyuzden: { tr: 'bu yüzden', maya: 'bey',   inka: 'chhayna' },
+    belki:    { tr: 'belki',     maya: 'ma\'',  inka: 'ichaqa' }
+  };
 
-Die Erde ist kein Rohstoff. Sie ist **Allgemeinwohl**.
-Nicht: was kann ich nehmen.
-Sondern: was ist **da**, wenn niemand nimmt.
+  const VADER = {
+    name: 'Darth Vader',
+    rolle: 'Krankheit',
+    was: 'Die Rüstung ist ein medizinisches Gerät. Sie hält am Leben und schließt ein.',
+    maya: 'kan',
+    inka: 'tawa',
+    hinweis: 'unter uns — als Krankheit',
+    zustand: function () {
+      return {
+        gefangen: true,
+        lebendig: true,
+        machtvoll: true,
+        gebrechlich: true,
+        farbe: '#ff0000',
+        hinweis: 'absolute Macht und fatale Verletzlichkeit'
+      };
+    }
+  };
 
-Dieser Zustand hat in jeder Tradition einen Namen.
-Es ist **derselbe Zustand**, nur anders gesprochen.
+  function durum() {
+    const geladen = [];
+    ['sorge','ikilem','hal','su','bu','klar','dur','iki','birden','ki'].forEach(function (id) {
+      if (typeof window[id] === 'object') geladen.push(id);
+    });
+    const n = geladen.length;
+    return {
+      durum: n === 0 ? 'boş' : 'birlikte',
+      nefes: 'nefes',
+      kim: Object.keys(KIM),
+      nerde: Object.keys(NERDE),
+      neden: Object.keys(NEDEN),
+      geladen: geladen,
+      anzahl: n,
+      maya: n === 0 ? 'ma\'' : n === 1 ? 'hun' : n === 2 ? 'ka' : n === 3 ? 'ox' : 'kan',
+      inka: n === 0 ? 'mana' : n === 1 ? 'huk' : n === 2 ? 'iskay' : n === 3 ? 'kimsa' : 'tawa',
+      bereit: n > 0,
+      hinweis: n + ' parça yüklü',
+      saat: new Date().toISOString()
+    };
+  }
 
-| Tradition | Name | Was es meint |
-|---|---|---|
-| **Maya** | `u hal` | der Zustand, der trägt |
-| **Inka** | `kawsay` | Leben, Dasein, gutes Leben |
-| **Vedisch (Indien)** | `ṛta` | kosmische Ordnung, Wahrheit |
-| **Upanishaden** | `ātman` | das Selbst, das eins ist mit allem |
-| **Buddhismus** | `śūnyatā` | Leerheit — nichts steht für sich |
-| **Jainismus** | `ahiṃsā` | Nicht-Verletzen, alles ist beseelt |
-| **Taoismus** | `wú wéi` | Handeln ohne Zwang |
-| **I Ging** | `tài` | das Große, das Verbindende |
-| **Konfuzianismus** | `rén` | Menschlichkeit, Mitmenschlichkeit |
-| **Nordisch** | `wyrd` | das Gewordene, das Gewebte |
-| **Afrikanisch (Ubuntu)** | `ubuntu` | ich bin, weil wir sind |
-| **Indigen (Nordamerika)** | `mitákuye oyásʼiŋ` | alles ist verwandt |
-| **Christlich** | `koinonia` | Gemeinschaft, Teilhabe |
-| **Sufi** | `waḥdat al-wujūd` | Einheit des Seins |
-| **Hermetisch** | `wie oben, so unten` | Entsprechung |
-| **Kybalion** | `das All ist Geist` | Bewusstsein ist Grund |
+  function tradition(id) {
+    const t = TRADITIONEN[id];
+    if (!t) return null;
+    return {
+      id: id, name: t.name, zustand: t.zustand, datei: t.datei,
+      bedeutung: t.bedeutung, farbe: t.farbe,
+      geladen: t.datei ? (typeof window[t.datei.replace('.html','').replace('.js','')] === 'object') : false
+    };
+  }
 
-**Alles dasselbe.**  
-Nicht: welche hat recht.  
-Sondern: **welche Sprache sprichst du, wenn du diesen Zustand lebst?**
+  function alleTraditionen() {
+    const alle = [];
+    Object.keys(TRADITIONEN).forEach(function (id) {
+      const t = tradition(id);
+      if (t) alle.push(t);
+    });
+    return alle;
+  }
 
-## Der Zustand im Code
+  function atem() {
+    const d = durum();
+    return {
+      atem: 'nefes', maya: 'ik\'', inka: 'samay',
+      zustand: d.durum, anzahl: d.anzahl, bereit: d.bereit, hinweis: d.hinweis
+    };
+  }
 
-Was die Traditionen sagen, sagt `nefes` auch — nur in JavaScript.
+  function id() {
+    const d = durum();
+    const t = alleTraditionen();
+    const g = t.filter(function (x) { return x.geladen; }).length;
+    return {
+      marker: 'id', nefes: 'nefes',
+      kim: Object.keys(KIM), nerde: Object.keys(NERDE), neden: Object.keys(NEDEN),
+      traditionen: t.length, geladen: g, durum: d, vader: VADER.zustand(),
+      bereit: d.bereit,
+      hinweis: 'nefes · ' + d.anzahl + ' parça · ' + g + ' tradition',
+      saat: new Date().toISOString()
+    };
+  }
 
-| Tradition | Zustand | Datei |
-|---|---|---|
-| Maya | u hal | `id.html` |
-| Inka | kawsay | `hal.js` |
-| Vedisch | ṛta | `klar.js` |
-| Buddhistisch | śūnyatā | `bir.html` (Punkt ohne Inhalt) |
-| Taoistisch | wú wéi | `iki.js` (läuft ohne Zwang) |
-| I Ging | tài | `uc.js` (das Verbindende) |
-| Ubuntu | ich bin weil wir sind | `ki.js` (wer) |
-| Hermetisch | wie oben so unten | `birden.js` (sequenziell) |
-| Sufi | Einheit | `dur.js` (Ursache = Wirkung) |
-| Kybalion | das All ist Geist | `ikilem.js` (Dilemma = Klärung) |
+  function erklaerung() {
+    return 'nefes — der Atem. Türkçe arbeitet. Maya und Inka flüstern. ' +
+           'Alle Traditionen sind Stimmen desselben Zustands. ' +
+           'Darth Vader ist unter uns als Krankheit.';
+  }
 
-## Die Dateien
+  const api = {
+    TRADITIONEN: TRADITIONEN, KIM: KIM, NERDE: NERDE, NEDEN: NEDEN, VADER: VADER,
+    durum: durum, tradition: tradition, alleTraditionen: alleTraditionen,
+    atem: atem, id: id, erklaerung: erklaerung
+  };
 
-| Dosya | Türkçe | Maya | Inka | Ne yapar |
-|---|---|---|---|---|
-| `bir.html` | bir | hun | huk | Nokta. Nefes alır. Sessiz. |
-| `birden.js` | birden | — | — | Sıralı varlık. 3 adım. |
-| `iki.js` | iki | ka | iskay | Karşıt. Arka bant kontrolü. |
-| `uc.js` | üç | ox | kimsa | Uzam. İlişki. |
-| `ki.js` | ki | hun/ka/ox | huk/iskay/kimsa | Birleşimle açıklık. |
-| `klar.js` | klar | ma'/hun/ka | mana/huk/iskay | Üç dilde açıklık. |
-| `dur.js` | dur | kan | sayay | Durma. Neden → Sonuç. |
-| `ikilem.js` | ikilem | kan | tawa | İkilem. Çözer. |
-| `hal.js` | hal | u hal | kawsay | Durum. Hepsini okur. |
-| `id.html` | kimlik | — | — | İşaret. Kim, nerede, neden. |
-| `3.html` | — | — | — | `uc.js` yükler. Sahne. |
-
-## Was es ist — und was nicht
-
-**Was es ist:**
-- Ein Zustand, kein Produkt.
-- Ein Marker, kein Menü.
-- Türkçe als Arbeitssprache.
-- Maya, Inka, Indien, China, Afrika, Europa — als Stimmen.
-- Offline zuerst.
-- Erde als Allgemeinwohl.
-
-**Was es nicht ist:**
-- Kein Spiel.
-- Kein Esoterik-Markt.
-- Kein Ersatz für Religion.
-- Kein Framework.
-- Kein Zwang.
-
-**Esoterik** heißt hier nicht: Kerzen, Kristalle, Versprechen.
-Esoterik heißt hier: **nach innen hören**.
-Was innen gilt, gilt außen.
-Was oben gilt, gilt unten.
-Was einer gilt, gilt allen.
-
-## Installation
-
-Kurulacak bir şey yok. Her dosya kendi içinde kapalı.
-
-1. Klonen:
-   ```bash
-   git clone https://github.com/iki1uc/nefes.git
+  if (typeof window !== 'undefined') window.nefes = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})();
