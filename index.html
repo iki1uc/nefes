@@ -71,11 +71,19 @@
      RUNTIME — lädt alle Dateien, prüft, zeigt Wahrheit
      ============================================================ -->
 
-<!-- Kern -->
-<script src="bir.html" onerror="window.__bir=false"></script>
-<script src="bu.js" onerror="window.__bu=false"></script>
-<script src="su.js" onerror="window.__su=false"></script>
-<script src="nefes.js" onerror="window.__nefes=false"></script>
+<!-- Kern: bir.html wird per fetch geprüft, nicht als <script> geladen -->
+<script>
+  // bir.html prüfen — HTML kann nicht als JS geladen werden
+  window.__bir = false;
+  fetch('bir.html', { method: 'HEAD' })
+    .then(function (r) { window.__bir = r.ok; })
+    .catch(function () { window.__bir = false; });
+</script>
+
+<!-- Kern-JS -->
+<script src="bu.js"></script>
+<script src="su.js"></script>
+<script src="nefes.js"></script>
 
 <!-- Anhängsel -->
 <script src="iki.js"></script>
@@ -107,20 +115,20 @@
   // DOSYALAR — was gibt es, was erwarten wir?
   // ------------------------------------------------------------
   const DOSYALAR = [
-    { id: 'bir',     tr: 'bir',     maya: 'hun',  inka: 'huk',    datei: 'bir.html'     },
-    { id: 'bu',      tr: 'bu',      maya: 'hun',  inka: 'huk',    datei: 'bu.js'        },
-    { id: 'su',      tr: 'şu',      maya: 'ka',   inka: 'iskay',  datei: 'su.js'        },
-    { id: 'nefes',   tr: 'nefes',   maya: 'ik\'', inka: 'samay',  datei: 'nefes.js'     },
-    { id: 'iki',     tr: 'iki',     maya: 'ka',   inka: 'iskay',  datei: 'iki.js'       },
-    { id: 'üç',      tr: 'üç',      maya: 'ox',   inka: 'kimsa',  datei: 'uc.js'        },
-    { id: 'ki',      tr: 'ki',      maya: 'hun',  inka: 'huk',    datei: 'ki.js'        },
-    { id: 'klar',    tr: 'klar',    maya: 'ma\'', inka: 'mana',   datei: 'klar.js'      },
-    { id: 'dur',     tr: 'dur',     maya: 'kan',  inka: 'sayay',  datei: 'dur.js'       },
-    { id: 'durdur',  tr: 'durdur',  maya: 'kan',  inka: 'sayay',  datei: 'durdur.js'    },
-    { id: 'ikilem',  tr: 'ikilem',  maya: 'kan',  inka: 'tawa',   datei: 'ikilem.js'    },
-    { id: 'hal',     tr: 'hal',     maya: 'u hal', inka: 'kawsay', datei: 'hal.js'      },
-    { id: 'kaygıyı', tr: 'kaygıyı', maya: 'kan',  inka: 'tawa',   datei: 'kaygıyı.js'   },
-    { id: 'birden',  tr: 'birden',  maya: 'ka',   inka: 'iskay',  datei: 'birden.js'    }
+    { id: 'bir',     tr: 'bir',     maya: 'hun',   inka: 'huk',    datei: 'bir.html',   html: true  },
+    { id: 'bu',      tr: 'bu',      maya: 'hun',   inka: 'huk',    datei: 'bu.js',      html: false },
+    { id: 'su',      tr: 'şu',      maya: 'ka',    inka: 'iskay',  datei: 'su.js',      html: false },
+    { id: 'nefes',   tr: 'nefes',   maya: 'ik\'',  inka: 'samay',  datei: 'nefes.js',   html: false },
+    { id: 'iki',     tr: 'iki',     maya: 'ka',    inka: 'iskay',  datei: 'iki.js',     html: false },
+    { id: 'üç',      tr: 'üç',      maya: 'ox',    inka: 'kimsa',  datei: 'uc.js',      html: false },
+    { id: 'ki',      tr: 'ki',      maya: 'hun',   inka: 'huk',    datei: 'ki.js',      html: false },
+    { id: 'klar',    tr: 'klar',    maya: 'ma\'',  inka: 'mana',   datei: 'klar.js',    html: false },
+    { id: 'dur',     tr: 'dur',     maya: 'kan',   inka: 'sayay',  datei: 'dur.js',     html: false },
+    { id: 'durdur',  tr: 'durdur',  maya: 'kan',   inka: 'sayay',  datei: 'durdur.js',  html: false },
+    { id: 'ikilem',  tr: 'ikilem',  maya: 'kan',   inka: 'tawa',   datei: 'ikilem.js',  html: false },
+    { id: 'hal',     tr: 'hal',     maya: 'u hal', inka: 'kawsay', datei: 'hal.js',     html: false },
+    { id: 'kaygıyı', tr: 'kaygıyı', maya: 'kan',   inka: 'tawa',   datei: 'kaygıyı.js', html: false },
+    { id: 'birden',  tr: 'birden',  maya: 'ka',    inka: 'iskay',  datei: 'birden.js',  html: false }
   ];
 
   // ------------------------------------------------------------
@@ -130,13 +138,15 @@
     let geladen = false;
     let obj = null;
 
-    // Spezialfall: bir.html ist HTML, kein JS-Objekt
-    if (d.id === 'bir') {
-      geladen = typeof window.bir !== 'undefined' || window.__bir === false;
-      obj = window.bir || null;
+    if (d.html) {
+      // HTML-Dateien: über window.__<id> prüfen (fetch)
+      geladen = window['__' + d.id] === true;
+      obj = null;
     } else {
+      // JS-Dateien: über window.<id> prüfen
       obj = window[d.id] || null;
-      geladen = typeof obj === 'object' || typeof obj === 'function';
+      geladen = (typeof obj === 'object' && obj !== null) ||
+                (typeof obj === 'function');
     }
 
     return {
@@ -167,7 +177,7 @@
 
     tb.innerHTML = '';
 
-    liste.forEach(e => {
+    liste.forEach(function (e) {
       const tr = document.createElement('tr');
 
       tr.innerHTML =
@@ -192,7 +202,7 @@
     const ctx = c.getContext('2d');
 
     const liste = hep();
-    const geladen = liste.filter(e => e.geladen).length;
+    const geladen = liste.filter(function (e) { return e.geladen; }).length;
     const gesamt = liste.length;
     const p = gesamt ? geladen / gesamt : 0;
 
@@ -240,7 +250,7 @@
   // ------------------------------------------------------------
   function durum() {
     const liste = hep();
-    const g = liste.filter(e => e.geladen).length;
+    const g = liste.filter(function (e) { return e.geladen; }).length;
     const t = liste.length;
 
     const n = g;
@@ -259,7 +269,7 @@
     if (di) di.textContent = inka;
     if (dtt) dtt.textContent = ((now() - start) / 1000).toFixed(1);
 
-    return { geladen: g, gesamt: t, maya, inka, p: t ? g / t : 0 };
+    return { geladen: g, gesamt: t, maya: maya, inka: inka, p: t ? g / t : 0 };
   }
 
   // ------------------------------------------------------------
@@ -278,9 +288,9 @@
     return {
       runtime: 'nefes',
       anzahl: liste.length,
-      geladen: liste.filter(e => e.geladen).length,
-      fehlt: liste.filter(e => !e.geladen).map(e => e.datei),
-      da: liste.filter(e => e.geladen).map(e => e.datei),
+      geladen: liste.filter(function (e) { return e.geladen; }).length,
+      fehlt: liste.filter(function (e) { return !e.geladen; }).map(function (e) { return e.datei; }),
+      da: liste.filter(function (e) { return e.geladen; }).map(function (e) { return e.datei; }),
       liste: liste,
       maya: durum().maya,
       inka: durum().inka,
@@ -297,7 +307,7 @@
     tick();
 
     // Tabelle neu zeichnen, wenn später was lädt
-    setInterval(() => {
+    setInterval(function () {
       yaz();
       ciz();
     }, 2000);
