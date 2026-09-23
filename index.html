@@ -3,532 +3,385 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>nefes · üç menü</title>
+<title>nefes · küp · atom · reaksiyon</title>
 <style>
-  html,body{margin:0;height:100%;background:#0a0a14;color:#eee;
-            font-family:monospace;overflow:auto;line-height:1.6}
-  #runtime{max-width:720px;margin:0 auto;padding:24px 16px 80px}
-  h1{color:#ffcc44;font-size:18px;margin:0 0 4px;letter-spacing:1px;font-weight:normal}
-  .hauch{color:#5fc8ff;font-size:11px;margin-bottom:20px}
-  .hauch .maya{color:#00ffaa}
-  .hauch .inka{color:#ff0066}
-
-  /* Menü-Tabs */
-  #menuTabs{display:flex;gap:6px;margin:20px 0 12px;flex-wrap:wrap}
-  .tab{
-    flex:1;min-width:120px;padding:10px 12px;text-align:center;
-    background:rgba(255,255,255,0.02);border:1px solid #1a1a2a;
-    border-radius:4px;cursor:pointer;font-size:12px;color:#888;
-    transition:all .2s
-  }
-  .tab:hover{border-color:#3a3a4a;color:#ccc}
-  .tab.aktiv{border-color:#ffcc44;color:#ffcc44;background:rgba(255,204,68,0.05)}
-  .tab .hauch{font-size:10px;color:#555;display:block;margin-top:2px}
-
-  /* Panels */
-  .panel{display:none;border:1px solid #1a1a2a;border-radius:6px;
-         padding:16px;background:rgba(255,255,255,0.01)}
-  .panel.aktiv{display:block}
-
-  .feld{margin:10px 0}
-  .feld label{display:block;color:#5fc8ff;font-size:11px;margin-bottom:4px}
-  .feld input,.feld select{
-    width:100%;padding:8px;background:#0a0a14;color:#eee;
-    border:1px solid #1a1a2a;border-radius:4px;font-family:monospace;
-    font-size:13px;box-sizing:border-box
-  }
-  .feld input:focus,.feld select:focus{outline:none;border-color:#00ffaa}
-
-  .knopf{
-    margin-top:14px;padding:10px 16px;background:rgba(0,255,170,0.05);
-    color:#00ffaa;border:1px solid #00ffaa;border-radius:4px;
-    cursor:pointer;font-family:monospace;font-size:13px;width:100%
-  }
-  .knopf:hover{background:rgba(0,255,170,0.12)}
+  html,body{margin:0;height:100%;background:#05050c;color:#eee;
+            font-family:monospace;overflow:hidden}
+  canvas{display:block;width:100vw;height:100vh}
+  #bild{position:fixed;top:10px;left:10px;background:rgba(5,5,12,0.8);
+        border:1px solid #1a1a2a;border-radius:4px;padding:10px 14px;
+        font-size:11px;line-height:1.8;pointer-events:none;
+        backdrop-filter:blur(2px);max-width:280px}
+  #bild b{color:#ffcc44}
+  #bild .maya{color:#00ffaa;font-size:10px}
+  #bild .inka{color:#ff0066;font-size:10px}
+  #bild .tr{color:#5fc8ff}
+  #kontrol{position:fixed;bottom:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap;
+           max-width:calc(100vw - 20px)}
+  .knopf{padding:8px 12px;background:rgba(0,255,170,0.05);color:#00ffaa;
+         border:1px solid #00ffaa;border-radius:4px;cursor:pointer;
+         font-family:monospace;font-size:11px}
+  .knopf:hover{background:rgba(0,255,170,0.15)}
+  .knopf.aktiv{background:rgba(0,255,170,0.2);color:#fff}
   .knopf.warn{color:#ff0066;border-color:#ff0066;background:rgba(255,0,102,0.05)}
-  .knopf.warn:hover{background:rgba(255,0,102,0.12)}
-
-  .ergebnis{
-    margin-top:14px;padding:12px;background:rgba(0,255,170,0.03);
-    border-left:3px solid #00ffaa;border-radius:0 4px 4px 0;
-    font-size:12px;line-height:1.7;white-space:pre-wrap;display:none
-  }
-  .ergebnis.aktiv{display:block}
-  .ergebnis .maya{color:#00ffaa}
-  .ergebnis .inka{color:#ff0066}
-  .ergebnis .tr{color:#ffcc44}
-  .ergebnis .prozent{color:#5fc8ff}
-  .ergebnis .grad{color:#ffcc44}
-  .ergebnis .nie{color:#ff0066;font-weight:bold}
-  .ergebnis .frage{color:#ffcc44;font-size:13px;margin-top:8px;font-style:italic}
-
-  /* Der eine Knopf — separat, nicht Urteil */
-  #tuer{
-    margin-top:20px;padding:16px;border:1px dashed #3a1a2a;
-    border-radius:6px;text-align:center;background:rgba(255,0,102,0.02)
-  }
-  #tuer .label{color:#ff0066;font-size:12px;margin-bottom:10px}
-  #tuer .knopf{color:#ff0066;border-color:#ff0066;background:rgba(255,0,102,0.05)}
-  #tuer .frage{margin-top:14px;color:#ffcc44;font-size:13px;
-               line-height:1.6;display:none}
-  #tuer .frage.aktiv{display:block}
-
-  .fuss{color:#444;font-size:10px;text-align:center;margin-top:32px}
-  #durum{
-    position:fixed;bottom:10px;right:10px;
-    background:rgba(10,10,20,0.85);border:1px solid #1a1a2a;
-    border-radius:4px;padding:8px 12px;font-size:11px;line-height:1.6;
-    text-align:right;pointer-events:none
-  }
+  .knopf.warn:hover{background:rgba(255,0,102,0.15)}
+  #durum{position:fixed;bottom:10px;right:10px;background:rgba(5,5,12,0.85);
+         border:1px solid #1a1a2a;border-radius:4px;padding:8px 12px;
+         font-size:10px;line-height:1.6;text-align:right;pointer-events:none}
   #durum b{color:#ffcc44}
 </style>
 </head>
 <body>
+<canvas id="c"></canvas>
 
-<div id="runtime">
-  <h1>nefes · üç menü</h1>
-  <div class="hauch">
-    <span class="maya">maya · ik'</span> ·
-    <span class="inka">inka · samay</span> ·
-    türkçe · nefes
-  </div>
+<div id="bild">
+  <div><b>nefes · küp</b></div>
+  <div class="tr">atom · reaksiyon · immergänzend · invertibel</div>
+  <div class="maya">maya · hun · ka · ox · kan</div>
+  <div class="inka">inka · huk · iskay · kimsa · tawa</div>
+  <hr style="border:0;border-top:1px solid #1a1a2a;margin:6px 0">
+  <div>atom: <b id="b-atom">8</b></div>
+  <div>reaktion: <b id="b-rea">–</b></div>
+  <div>modus: <b id="b-mod">normal</b></div>
+  <div>sicht: <b id="b-sicht">innen</b></div>
+</div>
 
-  <!-- ============================================================ -->
-  <!-- TABS — drei Menüs                                             -->
-  <!-- ============================================================ -->
-  <div id="menuTabs">
-    <div class="tab aktiv" data-menu="bitki">
-      bitki
-      <span class="hauch">pflanze · deutend</span>
-    </div>
-    <div class="tab" data-menu="market">
-      market
-      <span class="hauch">supermarkt · nutzend</span>
-    </div>
-    <div class="tab" data-menu="saglik">
-      sağlık
-      <span class="hauch">gesundheit · vorsichtig</span>
-    </div>
-  </div>
-
-  <!-- ============================================================ -->
-  <!-- MENÜ 1 — BITKI (Pflanze)                                      -->
-  <!-- ============================================================ -->
-  <div class="panel aktiv" id="panel-bitki">
-    <div class="feld">
-      <label>yaprak rengi · Blattfarbe</label>
-      <select id="b-renk">
-        <option value="yesil">yeşil · grün</option>
-        <option value="sari">sarı · gelb</option>
-        <option value="kahve">kahverengi · braun</option>
-        <option value="leke">lekeli · fleckig</option>
-        <option value="solgun">solgun · blass</option>
-      </select>
-    </div>
-    <div class="feld">
-      <label>boyut · Größe</label>
-      <select id="b-boyut">
-        <option value="kucuk">küçük · klein</option>
-        <option value="orta">orta · mittel</option>
-        <option value="buyuk">büyük · groß</option>
-        <option value="dev">dev · riesig</option>
-      </select>
-    </div>
-    <div class="feld">
-      <label>gövde · Stängel</label>
-      <select id="b-govde">
-        <option value="saglam">sağlam · fest</option>
-        <option value="egik">eğik · gebogen</option>
-        <option value="ince">ince · dünn</option>
-        <option value="kalin">kalın · dick</option>
-      </select>
-    </div>
-    <div class="feld">
-      <label>ortam · Umgebung</label>
-      <select id="b-ortam">
-        <option value="ic">iç mekan · drinnen</option>
-        <option value="dis">dış mekan · draußen</option>
-        <option value="sera">sera · Gewächshaus</option>
-      </select>
-    </div>
-
-    <button class="knopf" onclick="bitki.deut()">deuten · yorumla</button>
-    <div class="ergebnis" id="b-ergebnis"></div>
-  </div>
-
-  <!-- ============================================================ -->
-  <!-- MENÜ 2 — MARKET (Supermarkt)                                  -->
-  <!-- ============================================================ -->
-  <div class="panel" id="panel-market">
-    <div class="feld">
-      <label>ne arıyorsun · was suchst du</label>
-      <select id="m-ne">
-        <option value="yaprak">yaprak · Blatt</option>
-        <option value="kok">kök · Wurzel</option>
-        <option value="meyve">meyve · Frucht</option>
-        <option value="tohum">tohum · Samen</option>
-        <option value="cicek">çiçek · Blüte</option>
-      </select>
-    </div>
-    <div class="feld">
-      <label>kullanım · Verwendung</label>
-      <select id="m-kul">
-        <option value="cay">çay · Tee</option>
-        <option value="yemek">yemek · Essen</option>
-        <option value="baharat">baharat · Gewürz</option>
-        <option value="salata">salata · Salat</option>
-      </select>
-    </div>
-    <div class="feld">
-      <label>miktar · Menge</label>
-      <select id="m-mik">
-        <option value="az">az · wenig</option>
-        <option value="orta">orta · mittel</option>
-        <option value="cok">çok · viel</option>
-      </select>
-    </div>
-
-    <button class="knopf" onclick="market.deut()">dienst zeigen · hizmet</button>
-    <div class="ergebnis" id="m-ergebnis"></div>
-  </div>
-
-  <!-- ============================================================ -->
-  <!-- MENÜ 3 — SAĞLIK (Gesundheit)                                  -->
-  <!-- WICHTIG: nie Schwere. Nur % und °. Und die Tür.               -->
-  <!-- ============================================================ -->
-  <div class="panel" id="panel-saglik">
-    <div class="feld">
-      <label>belirti · Symptom (kurz)</label>
-      <input id="s-belirti" placeholder="örn. ateş · z.B. Fieber" maxlength="40">
-    </div>
-    <div class="feld">
-      <label>süre · Dauer</label>
-      <select id="s-sure">
-        <option value="saat">saatler · Stunden</option>
-        <option value="gun1">1 gün · 1 Tag</option>
-        <option value="hafta">hafta · Woche</option>
-        <option value="monat">ay · Monat</option>
-      </select>
-    </div>
-    <div class="feld">
-      <label>aciliyet · wie eilig fühlt es sich an</label>
-      <select id="s-acil">
-        <option value="1">1 · ruhe</option>
-        <option value="2">2 · leise</option>
-        <option value="3">3 · mittel</option>
-        <option value="4">4 · deutlich</option>
-        <option value="5">5 · drängend</option>
-      </select>
-    </div>
-
-    <button class="knopf" onclick="saglik.deut()">deutung · yorum</button>
-    <div class="ergebnis" id="s-ergebnis"></div>
-
-    <!-- Die Tür — separat, nicht Teil des Urteils -->
-    <div id="tuer">
-      <div class="label">— ayrı soru · separate Frage —</div>
-      <button class="knopf" onclick="saglik.tuer()">tam bilmek istemediğin şey</button>
-      <div class="frage" id="s-tuer"></div>
-    </div>
-  </div>
-
-  <div class="fuss">
-    runtime · tarayıcı tarar · işaret gösterir · oyun değil
-  </div>
+<div id="kontrol">
+  <button class="knopf aktiv" onclick="kuep.setModus('normal')">normal</button>
+  <button class="knopf" onclick="kuep.setModus('reaktion')">reaktion</button>
+  <button class="knopf" onclick="kuep.setModus('immerganz')">immergänzend</button>
+  <button class="knopf warn" onclick="kuep.invert()">invertibel</button>
+  <button class="knopf" onclick="kuep.setSicht('innen')">innen</button>
+  <button class="knopf" onclick="kuep.setSicht('aussen')">aussen</button>
 </div>
 
 <div id="durum">
-  <div>yüklü: <b id="d-y">0</b> / <b id="d-t">0</b></div>
-  <div>maya: <b id="d-maya">ma'</b></div>
-  <div>inka: <b id="d-inka">mana</b></div>
+  <div>dreht: <b id="d-drz">0.0</b>°</div>
+  <div>atome: <b id="d-n">8</b></div>
+  <div>kanten: <b id="d-k">12</b></div>
+  <div>flächen: <b id="d-f">6</b></div>
+  <div>rund: <b id="d-rund">nein</b></div>
 </div>
-
-<!-- ============================================================ -->
-<!-- RUNTIME — lädt alle Dateien, prüft                            -->
-<!-- ============================================================ -->
-<script>
-  window.__bir = false;
-  fetch('bir.html', { method: 'HEAD' })
-    .then(function (r) { window.__bir = r.ok; })
-    .catch(function () { window.__bir = false; });
-</script>
-
-<script src="bu.js"></script>
-<script src="su.js"></script>
-<script src="nefes.js"></script>
-<script src="iki.js"></script>
-<script src="uc.js"></script>
-<script src="ki.js"></script>
-<script src="klar.js"></script>
-<script src="dur.js"></script>
-<script src="durdur.js"></script>
-<script src="ikilem.js"></script>
-<script src="hal.js"></script>
-<script src="kaygıyı.js"></script>
-<script src="birden.js"></script>
 
 <script>
 // ============================================================
-// MENÜS — die drei
+// kuep — der Würfel
+// 8 Atome (Ecken) · 12 Kanten (Reaktionen) · 6 Flächen
+// Dreht sich · wirkt rund, obwohl überall Ecken
+// invertibel · immergänzend
 // Türkçe arbeitet. Maya und Inka flüstern.
 // ============================================================
 (function () {
   'use strict';
 
-  // ------------------------------------------------------------
-  // TABS — umschalten
-  // ------------------------------------------------------------
-  const tabs = document.querySelectorAll('.tab');
-  const panels = document.querySelectorAll('.panel');
+  const c = document.getElementById('c');
+  const ctx = c.getContext('2d');
 
-  tabs.forEach(function (tab) {
-    tab.addEventListener('click', function () {
-      const ziel = tab.getAttribute('data-menu');
-      tabs.forEach(function (t) { t.classList.remove('aktiv'); });
-      panels.forEach(function (p) { p.classList.remove('aktiv'); });
-      tab.classList.add('aktiv');
-      const panel = document.getElementById('panel-' + ziel);
-      if (panel) panel.classList.add('aktiv');
-    });
-  });
-
-  // ============================================================
-  // MENÜ 1 — BITKI
-  // deutet nur. Sagt nie: "die Pflanze ist krank".
-  // Sagt: was fehlt, was zu viel, ob ernte-reif.
-  // ============================================================
-  const bitki = {
-    deut: function () {
-      const renk   = document.getElementById('b-renk').value;
-      const boyut  = document.getElementById('b-boyut').value;
-      const govde  = document.getElementById('b-govde').value;
-      const ortam  = document.getElementById('b-ortam').value;
-
-      const fehlt = [];
-      const fazla = [];
-      let ernte = 'belirsiz';
-      let maya = 'hun';
-      let inka = 'huk';
-
-      // Farbe deuten
-      if (renk === 'yesil') { /* gut */ maya = 'ka'; inka = 'iskay'; }
-      if (renk === 'sari') { fehlt.push('azot · Stickstoff'); fehlt.push('ışık · Licht'); maya = 'ox'; inka = 'kimsa'; }
-      if (renk === 'kahve') { fehlt.push('su · Wasser'); fazla.push('kuru hava · trockene Luft'); maya = 'kan'; inka = 'tawa'; }
-      if (renk === 'leke') { fazla.push('nem · Feuchtigkeit'); maya = 'ho'; inka = 'pichqa'; }
-      if (renk === 'solgun') { fehlt.push('demir · Eisen'); fehlt.push('ışık · Licht'); maya = 'uac'; inka = 'suqta'; }
-
-      // Größe deuten
-      if (boyut === 'kucuk') { ernte = 'henüz değil · noch nicht'; }
-      if (boyut === 'orta') { ernte = 'yakında · bald'; }
-      if (boyut === 'buyuk') { ernte = 'olgun · reif'; }
-      if (boyut === 'dev') { fazla.push('büyüme · Wachstum'); ernte = 'geç · spät — überreif möglich'; }
-
-      // Stängel
-      if (govde === 'egik') { fehlt.push('destek · Stütze'); }
-      if (govde === 'ince') { fehlt.push('kalsiyum · Calcium'); }
-      if (govde === 'kalin') { fazla.push('besin · Nährstoffe'); }
-
-      // Umgebung
-      if (ortam === 'ic' && renk === 'solgun') { fehlt.push('dış ışık · Außenlicht'); }
-      if (ortam === 'dis' && renk === 'leke') { fehlt.push('hava akımı · Luftzirkulation'); }
-
-      // Ergebnis zusammenbauen
-      const r = document.getElementById('b-ergebnis');
-      let txt = '';
-      txt += '<span class="tr">durum · Zustand:</span> ';
-      txt += '<span class="maya">maya ' + maya + '</span> · ';
-      txt += '<span class="inka">inka ' + inka + '</span>\n\n';
-
-      txt += '<span class="tr">eksik · fehlt:</span> ';
-      txt += fehlt.length ? fehlt.join(', ') : 'yok · nichts';
-      txt += '\n';
-
-      txt += '<span class="tr">fazla · zu viel:</span> ';
-      txt += fazla.length ? fazla.join(', ') : 'yok · nichts';
-      txt += '\n';
-
-      txt += '<span class="tr">hasat · Ernte:</span> ' + ernte + '\n\n';
-
-      // Deutung — ohne Urteil
-      txt += '<span class="tr">deutung:</span>\n';
-      if (renk === 'yesil' && boyut === 'buyuk') {
-        txt += 'bitki istediğini yapmış · die Pflanze hat ihr Soll erfüllt. ';
-        txt += 'hasat için hazır · bereit zur Ernte.';
-      } else if (renk === 'sari' || renk === 'solgun') {
-        txt += 'bitki sessizce söylüyor: bir şey eksik. ';
-        txt += 'panik yok · kein Grund zur Panik. ';
-        txt += 'eksik olanı ekle · füge das Fehlende hinzu.';
-      } else if (renk === 'kahve') {
-        txt += 'bitki dur diyor · die Pflanze sagt: dur. ';
-        txt += 'su ver, sonra bekle · Wasser geben, dann warten.';
-      } else {
-        txt += 'bitki kendi yolunda · die Pflanze geht ihren Weg. ';
-        txt += 'izle · beobachten. acele etme · nicht eilen.';
-      }
-
-      r.innerHTML = txt;
-      r.classList.add('aktiv');
-    }
-  };
-
-  // ============================================================
-  // MENÜ 2 — MARKET
-  // Sagt: wie man nutzt. Nie: wie krank.
-  // ============================================================
-  const market = {
-    deut: function () {
-      const ne   = document.getElementById('m-ne').value;
-      const kul  = document.getElementById('m-kul').value;
-      const mik  = document.getElementById('m-mik').value;
-
-      const name = {
-        yaprak: 'yaprak · Blatt',
-        kok:    'kök · Wurzel',
-        meyve:  'meyve · Frucht',
-        tohum:  'tohum · Samen',
-        cicek:  'çiçek · Blüte'
-      }[ne];
-
-      const nutzung = {
-        cay:    'çay · Tee',
-        yemek:  'yemek · Essen',
-        baharat:'baharat · Gewürz',
-        salata: 'salata · Salat'
-      }[kul];
-
-      const menge = {
-        az:  'az · wenig',
-        orta:'orta · mittel',
-        cok: 'çok · viel'
-      }[mik];
-
-      const r = document.getElementById('m-ergebnis');
-      let txt = '';
-      txt += '<span class="tr">ne · was:</span> ' + name + '\n';
-      txt += '<span class="tr">kullanım · Verwendung:</span> ' + nutzung + '\n';
-      txt += '<span class="tr">miktar · Menge:</span> ' + menge + '\n\n';
-
-      // Dienst
-      txt += '<span class="tr">hizmet · Dienst:</span>\n';
-      if (kul === 'cay') {
-        txt += '1 tatlı kaşığı, 200 ml sıcak su, 5 dk. ';
-        txt += 'günde 1-2 fincan · 1 TL, 200 ml heißes Wasser, 5 Min.';
-      } else if (kul === 'yemek') {
-        txt += 'pişirmeden önce yıka · vor dem Kochen waschen. ';
-        txt += 'çiğ tüketme · nicht roh verzehren.';
-      } else if (kul === 'baharat') {
-        txt += 'kuruduktan sonra öğüt · nach dem Trocknen mahlen. ';
-        txt += 'serin yerde sakla · kühl lagern.';
-      } else if (kul === 'salata') {
-        txt += 'taze tüket · frisch verzehren. ';
-        txt += 'yıkadıktan sonra 10 dk içinde · innerhalb 10 Min. nach Waschen.';
-      }
-
-      txt += '\n\n<span class="maya">maya · kan</span> · ';
-      txt += '<span class="inka">inka · tawa</span>';
-
-      r.innerHTML = txt;
-      r.classList.add('aktiv');
-    }
-  };
-
-  // ============================================================
-  // MENÜ 3 — SAĞLIK
-  // NIEMALS SCHWERE. Nur % Wichtigkeit und ° Schwäche.
-  // Und die Tür.
-  // ============================================================
-  const saglik = {
-    deut: function () {
-      const belirti = document.getElementById('s-belirti').value || '(belirtisiz)';
-      const sure    = document.getElementById('s-sure').value;
-      const acil    = parseInt(document.getElementById('s-acil').value, 10);
-
-      // WICHTIG: kein Schweregrad. Nie.
-      // Nur:
-      //   yüzde önem · % Wichtigkeit
-      //   derece zaafiyet · ° Schwäche (wie eilig, nicht wie schlimm)
-
-      const wichtigkeit = {
-        saat:  40,
-        gun1:  55,
-        hafta: 70,
-        monat: 85
-      }[sure];
-
-      // Schwäche: 1 = ruhig, 5 = drängend
-      const schwaechen = {
-        1: 10,
-        2: 25,
-        3: 45,
-        4: 65,
-        5: 85
-      };
-      const schwa = schwaechen[acil];
-
-      const r = document.getElementById('s-ergebnis');
-      let txt = '';
-      txt += '<span class="tr">belirti · Symptom:</span> ' + belirti + '\n';
-      txt += '<span class="tr">süre · Dauer:</span> ' + sure + '\n\n';
-
-      // Nur diese zwei Zahlen. Nichts anderes.
-      txt += '<span class="prozent">% ' + wichtigkeit + '</span> ';
-      txt += '<span class="tr">önem · Wichtigkeit</span>\n';
-      txt += '<span class="grad">° ' + schwa + '</span> ';
-      txt += '<span class="tr">zaafiyet · Schwäche (aciliyet · Eiligkeit)</span>\n\n';
-
-      // Was NIE gesagt wird
-      txt += '<span class="nie">ağırlık · Schwere: söylenmez.</span>\n';
-      txt += '<span class="nie">tanı · Diagnose: yok.</span>\n';
-      txt += '<span class="nie">derece · Grad: yok.</span>\n\n';
-
-      txt += '<span class="tr">deutung:</span>\n';
-      txt += 'bu iki sayı yön gösterir. yön vermez. ';
-      txt += 'karar senin · die Entscheidung ist deine.\n\n';
-
-      txt += '<span class="maya">maya · ' + (wichtigkeit > 60 ? 'oxlahun' : 'ka') + '</span> · ';
-      txt += '<span class="inka">inka · ' + (schwa > 60 ? 'chunka kimsa' : 'iskay') + '</span>';
-
-      r.innerHTML = txt;
-      r.classList.add('aktiv');
-    },
-
-    // Die Tür — separat, nicht Urteil
-    tuer: function () {
-      const el = document.getElementById('s-tuer');
-      const belirti = document.getElementById('s-belirti').value || 'bir şey';
-
-      // Diese Frage kommt NICHT aus dem Urteil.
-      // Sie kommt, weil jemand da ist.
-      let txt = '';
-      txt += 'sana bir şey soracağım.\n';
-      txt += 'yalnız mısın · bist du alleine?\n\n';
-      txt += '<span style="color:#888;font-size:11px">';
-      txt += 'neden soruyorum: çünkü <b>' + belirti + '</b> hakkında ';
-      txt += 'söylenmeyen bir şey var. ';
-      txt += 'onu duymak istemeyebilirsin. ';
-      txt += 'ama eğer istersen — ve yalnız değilsen — ';
-      txt += 'birlikte bakarız.\n\n';
-      txt += 'yalnız olsan bile: buradasın. ';
-      txt += 'nefes alıyorsun. bu yeter.';
-      txt += '</span>';
-
-      el.innerHTML = txt;
-      el.classList.add('aktiv');
-    }
-  };
-
-  // Öffentlich
-  window.bitki = bitki;
-  window.market = market;
-  window.saglik = saglik;
-
-  // ============================================================
-  // RUNTIME — wie gehabt, aber ohne Kollision
-  // ============================================================
   const now = (window.performance && performance.now)
     ? performance.now.bind(performance)
     : Date.now;
+  const raf = window.requestAnimationFrame
+    || (cb => setTimeout(cb, 16));
 
+  function resize() {
+    c.width = window.innerWidth;
+    c.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const start = now();
+
+  // ============================================================
+  // ATOM — 8 Ecken · jede eine eigene Farbe
+  // Maya · Inka · Türkçe
+  // ============================================================
+  const ATOME = [
+    { x: -1, y: -1, z: -1, tr: 'sol-üst-ön',  maya: 'hun',  inka: 'huk',   farbe: '#00ffaa' },
+    { x:  1, y: -1, z: -1, tr: 'sağ-üst-ön',  maya: 'ka',   inka: 'iskay', farbe: '#5fc8ff' },
+    { x: -1, y:  1, z: -1, tr: 'sol-alt-ön',  maya: 'ox',   inka: 'kimsa', farbe: '#ffcc44' },
+    { x:  1, y:  1, z: -1, tr: 'sağ-alt-ön',  maya: 'kan',  inka: 'tawa',  farbe: '#ff0066' },
+    { x: -1, y: -1, z:  1, tr: 'sol-üst-arka',maya: 'ho',   inka: 'pichqa',farbe: '#88ff88' },
+    { x:  1, y: -1, z:  1, tr: 'sağ-üst-arka',maya: 'uac',  inka: 'suqta', farbe: '#ff8844' },
+    { x: -1, y:  1, z:  1, tr: 'sol-alt-arka',maya: 'uuc',  inka: 'qanchis',farbe:'#8888ff' },
+    { x:  1, y:  1, z:  1, tr: 'sağ-alt-arka',maya: 'uaxac',inka: 'pusaq', farbe: '#ff88ff' }
+  ];
+
+  // ============================================================
+  // KANTEN — 12 Reaktionen
+  // Jede Kante verbindet zwei Atome
+  // ============================================================
+  const KANTEN = [
+    [0,1],[0,2],[1,3],[2,3],   // vorne
+    [4,5],[4,6],[5,7],[6,7],   // hinten
+    [0,4],[1,5],[2,6],[3,7]    // verbindend
+  ];
+
+  // ============================================================
+  // ZUSTAND
+  // ============================================================
+  const Z = {
+    rx: 0.3,           // rotation x
+    ry: 0,             // rotation y
+    rz: 0,             // rotation z
+    modus: 'normal',   // normal · reaktion · immerganz
+    sicht: 'innen',    // innen · aussen
+    invertiert: false, // invertibel
+    reaktionen: [],    // aktive Reaktionen
+    tReaktion: 0
+  };
+
+  // ============================================================
+  // ROTATION — 3D → 2D
+  // ============================================================
+  function rotiere(p, t) {
+    // Rot Y (langsam)
+    const cy = Math.cos(t * 0.3), sy = Math.sin(t * 0.3);
+    let x1 = p.x * cy - p.z * sy;
+    let z1 = p.x * sy + p.z * cy;
+
+    // Rot X (mittel)
+    const cx = Math.cos(t * 0.2), sx = Math.sin(t * 0.2);
+    let y1 = p.y * cx - z1 * sx;
+    let z2 = p.y * sx + z1 * cx;
+
+    // Rot Z (schnell, leicht)
+    const cz = Math.cos(t * 0.1), sz = Math.sin(t * 0.1);
+    let x2 = x1 * cz - y1 * sz;
+    let y2 = x1 * sz + y1 * cz;
+
+    return { x: x2, y: y2, z: z2 };
+  }
+
+  // ============================================================
+  // PROJEKTION — 3D → 2D
+  // ============================================================
+  function projekt(p, cx, cy, entfernung, skalierung) {
+    const z = p.z + entfernung;
+    const f = skalierung / z;
+    return {
+      x: cx + p.x * f,
+      y: cy + p.y * f,
+      z: z,
+      f: f,
+      sichtbar: z > 0.1
+    };
+  }
+
+  // ============================================================
+  // ZEICHNEN
+  // ============================================================
+  function draw() {
+    const t = (now() - start) / 1000;
+
+    // Hintergrund
+    ctx.fillStyle = Z.invertiert ? '#eee' : '#05050c';
+    ctx.fillRect(0, 0, c.width, c.height);
+
+    const cx = c.width / 2;
+    const cy = c.height / 2;
+    const skala = Math.min(c.width, c.height) * 0.35;
+    const entfernung = 4;
+
+    // ============================================================
+    // ATOME — transformieren und sortieren
+    // ============================================================
+    const projiziert = ATOME.map(function (a, idx) {
+      const r = rotiere(a, t);
+      const p = projekt(r, cx, cy, entfernung, skala);
+      return { idx: idx, atom: a, p: p, r: r };
+    });
+
+    // Sortieren: hinten zuerst (z größer = weiter weg)
+    projiziert.sort(function (a, b) { return b.p.z - a.p.z; });
+
+    // ============================================================
+    // REAKTIONEN — Kanten
+    // ============================================================
+    const puls = (Math.sin(t * 1.5) + 1) / 2; // 0..1
+
+    KANTEN.forEach(function (k) {
+      const a = projiziert.find(function (p) { return p.idx === k[0]; });
+      const b = projiziert.find(function (p) { return p.idx === k[1]; });
+      if (!a || !b) return;
+      if (!a.p.sichtbar || !b.p.sichtbar) return;
+
+      // Tiefe → Alpha
+      const depth = (a.p.z + b.p.z) / 2;
+      const alpha = Math.max(0.1, 1 - (depth - entfernung + 1.5) / 3);
+
+      // Modus-abhängige Farbe
+      let farbe = 'rgba(95,200,255,' + (alpha * 0.3) + ')';
+      let breite = 1;
+
+      if (Z.modus === 'reaktion') {
+        // Reaktionen pulsieren
+        farbe = 'rgba(255,204,68,' + (alpha * (0.3 + puls * 0.6)) + ')';
+        breite = 1.5 + puls * 1.5;
+      } else if (Z.modus === 'immerganz') {
+        // immergänzend — jede Kante hat eine Gegenseite
+        // beide leuchten gleichzeitig
+        const gegen = KANTEN.findIndex(function (kk) {
+          return (kk[0] === k[0] && kk[1] === k[1]) ||
+                 (kk[0] === k[1] && kk[1] === k[0]);
+        });
+        const phase = (t * 2 + gegen * 0.5) % 2;
+        const hell = phase < 1 ? phase : 2 - phase;
+        farbe = 'rgba(0,255,170,' + (alpha * (0.2 + hell * 0.7)) + ')';
+        breite = 1 + hell * 2;
+      }
+
+      if (Z.invertiert) {
+        farbe = farbe.replace('rgba', 'rgba').replace(/[\d.]+\)$/, function (m) {
+          return m;
+        });
+      }
+
+      // Linie
+      ctx.beginPath();
+      ctx.moveTo(a.p.x, a.p.y);
+      ctx.lineTo(b.p.x, b.p.y);
+      ctx.strokeStyle = farbe;
+      ctx.lineWidth = breite;
+      ctx.stroke();
+    });
+
+    // ============================================================
+    // ATOME — als Kreise
+    // ============================================================
+    projiziert.forEach(function (o) {
+      if (!o.p.sichtbar) return;
+
+      const r = Math.max(2, o.p.f * 0.12);
+
+      // Äußerer Glow
+      ctx.beginPath();
+      ctx.arc(o.p.x, o.p.y, r * 3, 0, Math.PI * 2);
+      ctx.fillStyle = hexAlpha(o.atom.farbe, 0.08);
+      ctx.fill();
+
+      // Innerer Kreis
+      ctx.beginPath();
+      ctx.arc(o.p.x, o.p.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = o.atom.farbe;
+      ctx.fill();
+
+      // Invertiert → schwarzer Rand
+      if (Z.invertiert) {
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // Nur vorne beschriften
+      if (Z.sicht === 'aussen' && o.p.z < entfernung + 0.5) {
+        ctx.fillStyle = Z.invertiert ? '#000' : '#fff';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(o.atom.maya, o.p.x, o.p.y - r - 8);
+      }
+
+      if (Z.sicht === 'innen' && o.p.z >= entfernung + 0.5) {
+        ctx.fillStyle = Z.invertiert ? '#333' : '#888';
+        ctx.font = '9px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(o.atom.inka, o.p.x, o.p.y - r - 8);
+      }
+    });
+
+    // ============================================================
+    // RUND-ERKENNUNG
+    // Wenn sich alles dreht, wirken die Ecken rund
+    // ============================================================
+    const dreh = t * 30; // Grad
+    const rund = dreh > 30; // nach 1 Sekunde Drehung: rund
+
+    // Bild-Aktualisierung
+    aktualisiereBild({
+      atom: ATOME.length,
+      rea: KANTEN.length,
+      modus: Z.modus,
+      sicht: Z.sicht,
+      dreh: dreh,
+      rund: rund
+    });
+
+    raf(draw);
+  }
+
+  // ============================================================
+  // hexAlpha — Hex + Alpha
+  // ============================================================
+  function hexAlpha(hex, a) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+  }
+
+  // ============================================================
+  // BILD — Anzeige
+  // ============================================================
+  function aktualisiereBild(d) {
+    const bAtom = document.getElementById('b-atom');
+    const bRea = document.getElementById('b-rea');
+    const bMod = document.getElementById('b-mod');
+    const bSicht = document.getElementById('b-sicht');
+    const dDrz = document.getElementById('d-drz');
+    const dN = document.getElementById('d-n');
+    const dK = document.getElementById('d-k');
+    const dF = document.getElementById('d-f');
+    const dRund = document.getElementById('d-rund');
+
+    if (bAtom) bAtom.textContent = d.atom;
+    if (bRea) bRea.textContent = d.rea;
+    if (bMod) bMod.textContent = d.modus;
+    if (bSicht) bSicht.textContent = d.sicht;
+
+    if (dDrz) dDrz.textContent = d.dreh.toFixed(1);
+    if (dN) dN.textContent = d.atom;
+    if (dK) dK.textContent = d.rea;
+    if (dF) dF.textContent = 6;
+    if (dRund) {
+      dRund.textContent = d.rund ? 'evet · ja' : 'hayır · nein';
+      dRund.style.color = d.rund ? '#00ffaa' : '#ffcc44';
+    }
+  }
+
+  // ============================================================
+  // ÖFFENTLICH — küp
+  // ============================================================
+  window.kuep = {
+    ATOME: ATOME,
+    KANTEN: KANTEN,
+    setModus: function (m) {
+      Z.modus = m || 'normal';
+      // Buttons markieren
+      document.querySelectorAll('.knopf').forEach(function (k) {
+        k.classList.remove('aktiv');
+        if (k.textContent.trim() === m) k.classList.add('aktiv');
+      });
+    },
+    setSicht: function (s) {
+      Z.sicht = s || 'innen';
+      document.querySelectorAll('.knopf').forEach(function (k) {
+        k.classList.remove('aktiv');
+        if (k.textContent.trim() === s) k.classList.add('aktiv');
+      });
+    },
+    invert: function () {
+      Z.invertiert = !Z.invertiert;
+      const btn = document.querySelector('.knopf.warn');
+      if (btn) btn.classList.toggle('aktiv', Z.invertiert);
+    },
+    zustand: function () { return Z; }
+  };
+
+  // ============================================================
+  // RUNTIME — Dateien prüfen (wie gehabt)
+  // ============================================================
   const DOSYALAR = [
     { id: 'bir', html: true }, { id: 'bu' }, { id: 'su' },
     { id: 'nefes' }, { id: 'iki' }, { id: 'üç' }, { id: 'ki' },
@@ -536,47 +389,37 @@
     { id: 'ikilem' }, { id: 'hal' }, { id: 'kaygıyı' }, { id: 'birden' }
   ];
 
-  function bak(d) {
-    if (d.html) return { id: d.id, geladen: window['__' + d.id] === true };
-    const obj = window[d.id];
-    return { id: d.id, geladen: (typeof obj === 'object' && obj !== null) || typeof obj === 'function' };
-  }
-
-  function durum() {
-    const g = DOSYALAR.map(bak).filter(function (e) { return e.geladen; }).length;
-    const t = DOSYALAR.length;
-    const maya = g === 0 ? 'ma\'' : g === 1 ? 'hun' : g === 2 ? 'ka' : g <= 4 ? 'ox' : 'kan';
-    const inka = g === 0 ? 'mana' : g === 1 ? 'huk' : g === 2 ? 'iskay' : g <= 4 ? 'kimsa' : 'tawa';
-    const dy = document.getElementById('d-y');
-    const dt = document.getElementById('d-t');
-    const dm = document.getElementById('d-maya');
-    const di = document.getElementById('d-inka');
-    if (dy) dy.textContent = g;
-    if (dt) dt.textContent = t;
-    if (dm) dm.textContent = maya;
-    if (di) di.textContent = inka;
-  }
-
-  function tick() {
-    durum();
-    requestAnimationFrame(tick);
-  }
-
   window.scan = function () {
-    const liste = DOSYALAR.map(bak);
-    return {
-      runtime: 'nefes üç menü',
-      anzahl: liste.length,
-      geladen: liste.filter(function (e) { return e.geladen; }).length,
-      fehlt: liste.filter(function (e) { return !e.geladen; }).map(function (e) { return e.id; }),
-      da: liste.filter(function (e) { return e.geladen; }).map(function (e) { return e.id; })
-    };
+    return DOSYALAR.map(function (d) {
+      if (d.html) {
+        return { id: d.id, geladen: window['__' + d.id] === true };
+      }
+      const obj = window[d.id];
+      return {
+        id: d.id,
+        geladen: (typeof obj === 'object' && obj !== null) || typeof obj === 'function'
+      };
+    });
   };
 
-  durum();
-  tick();
+  // ============================================================
+  // START
+  // ============================================================
+  draw();
+
+  // Klick-Aktivierung für Tabs (normal, reaktion, immerganz)
+  document.querySelectorAll('.knopf').forEach(function (k) {
+    k.addEventListener('click', function () {
+      const txt = k.textContent.trim();
+      if (txt === 'normal' || txt === 'reaktion' || txt === 'immerganz') {
+        window.kuep.setModus(txt);
+      } else if (txt === 'innen' || txt === 'aussen') {
+        window.kuep.setSicht(txt);
+      }
+    });
+  });
+
 })();
 </script>
-
 </body>
 </html>
