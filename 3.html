@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>üç — der Raum</title>
+<style>
+  html,body{margin:0;height:100%;background:#0a0a14;overflow:hidden}
+  canvas{display:block;width:100vw;height:100vh}
+</style>
+</head>
+<body>
+<canvas id="c3"></canvas>
+
+<script src="uc.js"></script>
+
+<script>
+// ============================================================
+// 3.html — Ergänzung zu uc.js
+// Lädt uc.js und gibt ihm den Canvas.
+// uc.js mountet sich selbst — hier nur der Ort.
+// ============================================================
+
+// uc.js erwartet Canvas #c3.
+// Der Canvas ist oben schon da.
+// uc.js findet ihn, mountet sich, läuft.
+
+// Wenn uc.js noch nicht geladen ist:
+if (!window.üç) {
+  console.warn('uc.js nicht geladen — prüfe Pfad');
+}
+
+// Öffentlich zugänglich für Konsole:
+// üç.setBeziehung(1, 2, false);
+// üç.setKnoten(1, 0.3, 0.6);
+// üç.klar();
+</script>
+</body>
+</html>
