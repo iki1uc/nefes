@@ -1,0 +1,6 @@
+empfang(input)
+  → drei(input)
+      → neun(drei)
+          → einundachtzig(neun)
+              → drei(einundachtzig)
+  → versand(drei)
