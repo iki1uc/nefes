@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nefes – raum</title>
+<style>
+  body { margin: 0; font-family: system-ui; background: #111; color: #eee;
+         display: flex; flex-direction: column; height: 100dvh; }
+  #farbe { flex: 1; transition: background 1s; display: flex;
+           align-items: center; justify-content: center; font-size: 1.4rem; }
+  #wahl { display: flex; gap: .5rem; padding: 1rem; }
+  #wahl button { flex: 1; padding: 1rem; border: none; border-radius: .5rem;
+                 background: #222; color: #eee; font-size: 1rem; }
+  #wahl button.aktiv { background: #444; }
+  #raum { padding: 1rem; min-height: 3rem; font-size: .9rem; color: #aaa; }
+</style>
+</head>
+<body>
+  <div id="farbe">wähle</div>
+  <div id="wahl">
+    <button data-p="schach">♟ Schach</button>
+    <button data-p="soccer">⚽ Soccer</button>
+    <button data-p="wetter">☁ Wetter</button>
+    <button data-p="eigenes">✎ Eigenes</button>
+  </div>
+  <div id="raum">allein</div>
+
+<script>
+// --- Farben als Führung ---
+const farben = {
+  schach:  "#2a3a5a",  // ruhiges Blau: Denken
+  soccer:  "#2a5a2a",  // Grün: Bewegung
+  wetter:  "#5a5a2a",  // Gelb: Beobachtung
+  eigenes: "#5a2a5a",  // Violett: Freiheit
+  allein:  "#111111"
+};
+
+// --- Zustand ---
+let meinePraef = null;
+const andere = new Map(); // id -> präferenz
+
+// --- WebSocket zum Raum (später durch echten Server ersetzen) ---
+// Für den Test reicht BroadcastChannel auf einem Gerät:
+const kanal = new BroadcastChannel("nefes-raum");
+
+kanal.onmessage = (e) => {
+  const { id, praef } = e.data;
+  if (id === meineId) return;
+  andere.set(id, praef);
+  zeichneRaum();
+};
+
+const meineId = crypto.randomUUID();
+
+// --- Wahl treffen ---
+document.querySelectorAll("#wahl button").forEach(b => {
+  b.onclick = () => {
+    meinePraef = b.dataset.p;
+    document.querySelectorAll("#wahl button").forEach(x =>
+      x.classList.toggle("aktiv", x === b));
+    kanal.postMessage({ id: meineId, praef: meinePraef });
+    zeichne();
+  };
+});
+
+// --- Zeichnen: Farbe aus Mischung aller Präferenzen ---
+function zeichne() {
+  const werte = [meinePraef, ...andere.values()].filter(Boolean);
+  const farbeEl = document.getElementById("farbe");
+
+  if (werte.length === 0) {
+    farbeEl.style.background = farben.allein;
+    farbeEl.textContent = "wähle";
+    return;
+  }
+
+  // Mische die Farben: jede Präferenz ein Gewicht
+  const rgb = werte.map(p => hexZuRgb(farben[p] || farben.eigenes));
+  const avg = rgb.reduce((a, c) => [a[0]+c[0], a[1]+c[1], a[2]+c[2]], [0,0,0])
+                 .map(v => Math.round(v / rgb.length));
+
+  farbeEl.style.background = `rgb(${avg.join(",")})`;
+  farbeEl.textContent = werte.length === 1
+    ? "du allein"
+    : `${werte.length} im raum`;
+}
+
+function zeichneRaum() {
+  const namen = [...andere.values()];
+  document.getElementById("raum").textContent =
+    namen.length ? "mit: " + namen.join(", ") : "allein";
+  zeichne();
+}
+
+function hexZuRgb(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n>>16)&255, (n>>8)&255, n&255];
+}
+</script>
+</body>
+</html>
