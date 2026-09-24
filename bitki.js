@@ -1,7 +1,3 @@
-NEFES.registriere("bitki", (phase, richtung, t) => {
-  // bei jeder Bewegung: Lage lesen
-  BITKI.fühle(phase, richtung);   // fühlt den Takt
-});
 // ============================================================
 // bitki.js — BITKI · die hand
 // fühlt: bewegung · lage · erschütterung
