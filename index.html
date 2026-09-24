@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>nefes · runtime</title>
+<style>
+  :root {
+    --bg:#0a0a0f; --fg:#e8e8f0; --dim:#6a6a7a; --linie:#1a1a25;
+    --s3:#8a2020; --s4:#8a5a20; --s5:#8a8a20; --s6:#5a8a20; --s7:#208a20;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    min-height: 100vh; min-height: 100dvh;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: var(--bg); color: var(--fg);
+    display: flex; flex-direction: column;
+    transition: background .8s ease;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+    user-select: none; -webkit-user-select: none;
+    touch-action: manipulation;
+    font-size: 14px;
+  }
+
+  header {
+    padding: .75rem 1rem;
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 1px solid var(--linie);
+  }
+  header h1 { margin: 0; font-size: 1rem; font-weight: 500; letter-spacing: .12em; }
+  header .meta { color: var(--dim); font-size: .7rem; font-variant-numeric: tabular-nums; }
+
+  main { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+
+  .tafel {
+    display: flex; gap: 1px; background: var(--linie);
+    border-bottom: 1px solid var(--linie);
+  }
+  .tafel span {
+    flex: 1; padding: .5rem .25rem; text-align: center;
+    font-size: .7rem; letter-spacing: .08em;
+    background: var(--bg);
+  }
+  .tafel .blau    { color: #3a5a9a; }
+  .tafel .gruen   { color: #3a9a4a; }
+  .tafel .gelb    { color: #9a9a3a; }
+  .tafel .violett { color: #9a3a9a; }
+  .tafel .zahl { display: block; color: var(--fg); font-size: .9rem; margin-top: .15rem; }
+
+  .reiter {
+    display: flex; border-bottom: 1px solid var(--linie);
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+  }
+  .reiter button {
+    flex: 0 0 auto; padding: .75rem 1rem;
+    background: transparent; color: var(--dim);
+    border: none; border-bottom: 2px solid transparent;
+    font-family: inherit; font-size: .8rem; letter-spacing: .1em;
+    cursor: pointer; text-transform: uppercase;
+  }
+  .reiter button.aktiv {
+    color: var(--fg); border-bottom-color: var(--fg);
+  }
+
+  .seite { display: none; flex: 1; padding: 1rem; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .seite.aktiv { display: block; }
+
+  /* Runtime */
+  #runtime-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: .75rem; max-width: 24rem; margin: 0 auto 1rem;
+  }
+  .slot {
+    aspect-ratio: 1; border-radius: .9rem;
+    background: #12121a; border: 2px solid var(--linie);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: .5rem; text-align: center; cursor: pointer;
+    transition: border-color .3s, transform .1s;
+    position: relative; touch-action: manipulation;
+  }
+  .slot:active { transform: scale(.97); }
+  .slot.aktiv { border-color: currentColor; }
+  .slot .name { font-size: .65rem; color: var(--dim); letter-spacing: .1em; text-transform: uppercase; }
+  .slot .wert { font-size: 1.8rem; margin: .15rem 0; font-weight: 300; font-variant-numeric: tabular-nums; }
+  .slot .info { font-size: .6rem; color: var(--dim); }
+
+  .nenner {
+    text-align: center; padding: .75rem 0;
+    border-top: 1px solid var(--linie); border-bottom: 1px solid var(--linie);
+    margin-bottom: 1rem;
+  }
+  .nenner .label { font-size: .65rem; color: var(--dim); letter-spacing: .15em; text-transform: uppercase; }
+  .nenner .zahl { font-size: 2.4rem; font-weight: 200; margin: .1rem 0; font-variant-numeric: tabular-nums; }
+  .nenner .eins { font-size: .8rem; color: var(--dim); }
+
+  .überführung { text-align: center; padding: .5rem; font-size: .75rem; color: var(--dim); margin-bottom: 1rem; }
+  .überführung .stand { font-size: 1.1rem; color: var(--fg); font-weight: 300; letter-spacing: .1em; }
+
+  /* Bitki */
+  .pflanze {
+    border: 1px solid var(--linie); border-radius: .75rem;
+    padding: .75rem 1rem; margin-bottom: .6rem;
+    background: #0e0e15;
+  }
+  .pflanze .kopf {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: .5rem;
+  }
+  .pflanze .name { font-size: .95rem; letter-spacing: .05em; }
+  .pflanze .zahl {
+    font-size: 1.4rem; font-weight: 300;
+    font-variant-numeric: tabular-nums;
+    padding: .1rem .5rem; border-radius: .4rem;
+  }
+  .pflanze .zustand { font-size: .7rem; color: var(--dim); }
+  .pflanze .gitter {
+    display: grid; grid-template-columns: 1fr 1fr; gap: .35rem;
+    font-size: .72rem;
+  }
+  .pflanze .gitter div { padding: .2rem 0; }
+  .pflanze .marke { color: var(--dim); }
+  .pflanze .gift     { color: #c06060; }
+  .pflanze .aroma    { color: #60c060; }
+  .pflanze .taugt    { color: #c0c060; }
+
+  .pflanze .regler {
+    display: flex; gap: .35rem; margin-top: .5rem;
+    font-size: .7rem;
+  }
+  .pflanze .regler input {
+    flex: 1; background: #12121a; border: 1px solid var(--linie);
+    color: var(--fg); padding: .25rem .4rem; border-radius: .3rem;
+    font-family: inherit; font-size: .7rem;
+  }
+
+  /* Kultur */
+  .kultur-block {
+    border-left: 2px solid var(--linie); padding: .5rem 1rem;
+    margin-bottom: .75rem;
+  }
+  .kultur-block .titel { font-size: .85rem; letter-spacing: .1em; color: var(--fg); }
+  .kultur-block .text { font-size: .75rem; color: var(--dim); margin-top: .25rem; line-height: 1.5; }
+
+  /* Achsen */
+  .achsen {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1px; background: var(--linie);
+    border-top: 1px solid var(--linie);
+    border-bottom: 1px solid var(--linie);
+  }
+  .achse-box { background: var(--bg); padding: .6rem .9rem; min-height: 5rem; }
+  .achse-box .titel { font-size: .6rem; color: var(--dim); letter-spacing: .15em; text-transform: uppercase; margin-bottom: .35rem; }
+  .achse-box .zeile { font-size: .7rem; padding: .1rem 0; font-variant-numeric: tabular-nums; }
+  .achse-box .marke { color: var(--dim); }
+
+  #protokoll {
+    padding: .5rem 1rem; font-size: .7rem; color: var(--dim);
+    height: 4rem; overflow-y: auto;
+    border-bottom: 1px solid var(--linie);
+    -webkit-overflow-scrolling: touch;
+    user-select: text; -webkit-user-select: text;
+  }
+  #protokoll div { padding: .1rem 0; }
+
+  .regler-unten { display: flex; gap: .5rem; padding: .75rem 1rem; }
+  .regler-unten button {
+    flex: 1; padding: .75rem; border: 1px solid var(--linie);
+    background: #12121a; color: var(--fg);
+    border-radius: .5rem; font-family: inherit; font-size: .8rem;
+    cursor: pointer; touch-action: manipulation;
+    -webkit-appearance: none; appearance: none;
+  }
+  .regler-unten button:active { background: var(--linie); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>nefes · runtime</h1>
+  <span class="meta" id="uhr">—</span>
+</header>
+
+<div class="tafel">
+  <span class="blau">blau<span class="zahl">2</span></span>
+  <span class="gruen">grün<span class="zahl">3</span></span>
+  <span class="gelb">gelb<span class="zahl">4</span></span>
+  <span class="violett">violett<span class="zahl">5</span></span>
+</div>
+
+<div class="reiter" id="reiter">
+  <button data-seite="runtime" class="aktiv">runtime</button>
+  <button data-seite="bitki">bitki</button>
+  <button data-seite="kultur">kultur</button>
+</div>
+
+<main>
+
+  <!-- ============ RUNTIME ============ -->
+  <div class="seite aktiv" id="seite-runtime">
+    <div id="runtime-grid"></div>
+    <div class="nenner">
+      <div class="label">gemeinsamer nenner</div>
+      <div class="zahl" id="nenner-zahl">—</div>
+      <div class="eins" id="nenner-eins">warte auf spieler</div>
+    </div>
+    <div class="überführung">
+      <span class="stand" id="stand">leer</span>
+      <span id="führt">—</span>
+    </div>
+  </div>
+
+  <!-- ============ BITKI ============ -->
+  <div class="seite" id="seite-bitki">
+    <div id="bitki-liste"></div>
+  </div>
+
+  <!-- ============ KULTUR ============ -->
+  <div class="seite" id="seite-kultur">
+    <div id="kultur-liste"></div>
+  </div>
+
+</main>
+
+<div id="protokoll"></div>
+
+<div class="achsen">
+  <div class="achse-box">
+    <div class="titel">axle · achse</div>
+    <div id="axle-zeilen"></div>
+  </div>
+  <div class="achse-box">
+    <div class="titel">ayle · familie</div>
+    <div id="ayle-zeilen"></div>
+  </div>
+</div>
+
+<div class="regler-unten">
+  <button id="btn-würfle" type="button">würfle</button>
+  <button id="btn-reset" type="button">reset</button>
+</div>
+
+<script>
+"use strict";
+
+// ============================================================
+// AXLE · die achse
+// ============================================================
+const ACHSE = (() => {
+  let log = [], zähler = new Map(), personen = new Map(), kombinationen = new Set();
+  function notiere(e) {
+    log.push({ zeit: Date.now(), ...e });
+    zähler.set(e.was, (zähler.get(e.was) || 0) + 1);
+    if (!personen.has(e.fürWen)) personen.set(e.fürWen, new Map());
+    personen.get(e.fürWen).set(e.was, (personen.get(e.fürWen).get(e.was) || 0) + 1);
+    if (e.deckt) kombinationen.add(e.deckt);
+  }
+  function deckung(themen) {
+    const möglich = Math.max(1, Math.pow(2, themen.length) - 1);
+    const gesehen = kombinationen.size;
+    const quote = gesehen / möglich;
+    return {
+      möglich, gesehen, quote: quote.toFixed(3),
+      grund: quote >= 0.5 ? "mehr als die hälfte der ecken erreicht"
+           : quote >= 0.25 ? "ein viertel der ecken erreicht"
+           : "noch nicht genug ecken",
+    };
+  }
+  function bericht() {
+    return {
+      anzahl: log.length,
+      häufigkeit: Object.fromEntries(zähler),
+      personen: Object.fromEntries([...personen].map(([k, v]) => [k, Object.fromEntries(v)])),
+      letzte: log.slice(-3),
+    };
+  }
+  function reset() { log = []; zähler = new Map(); personen = new Map(); kombinationen = new Set(); }
+  return { notiere, deckung, bericht, reset, get log() { return [...log]; } };
+})();
+
+// ============================================================
+// AYLE · die familie
+// ============================================================
+const AYLE = (() => {
+  let familie = new Map();
+  function aufnehmen(person, rolle = "kind") {
+    if (!familie.has(person)) familie.set(person, { rolle, seit: Date.now(), mit: new Set() });
+    return familie.get(person);
+  }
+  function verbinden(a, b, wie = "geschwister") {
+    aufnehmen(a); aufnehmen(b);
+    const fa = familie.get(a), fb = familie.get(b);
+    if (fa.mit.has(b)) return false;
+    fa.mit.add(b); fb.mit.add(a);
+    ACHSE.notiere({ was: "verwandt." + wie, warum: "familie wächst", fürWen: a + "+" + b, deckt: [a, b].sort().join("+") });
+    return true;
+  }
+  function stammbaum() {
+    const out = {};
+    for (const [name, info] of familie) out[name] = { rolle: info.rolle, mit: [...info.mit], seit: info.seit };
+    return out;
+  }
+  function überführung() {
+    const n = familie.size;
+    if (n === 0) return { stand: 0, name: "leer", führt: "—" };
+    if (n === 1) return { stand: 1, name: "punkt", führt: "axle" };
+    if (n === 2) return { stand: 2, name: "paar", führt: "ayle" };
+    if (n === 3) return { stand: 3, name: "raum", führt: "axle+ayle" };
+    return { stand: 4, name: "kreis", führt: "ayle" };
+  }
+  function reset() { familie = new Map(); }
+  return { aufnehmen, verbinden, stammbaum, überführung, reset, get familie() { return [...familie]; } };
+})();
+
+// ============================================================
+// BITKI · die pflanzen
+// skala 3..7, gift, aroma, taugt
+// ============================================================
+const BITKI = (() => {
+
+  const SKALA = {
+    3: { name: "kippt",   farbe: "#8a2020", tat: "nicht mehr roh" },
+    4: { name: "schwach", farbe: "#8a5a20", tat: "nur noch garen" },
+    5: { name: "mittel",  farbe: "#8a8a20", tat: "taugt" },
+    6: { name: "gut",     farbe: "#5a8a20", tat: "taugt gut" },
+    7: { name: "voll",    farbe: "#208a20", tat: "jetzt verzehren" },
+  };
+
+  // jede pflanze: gift / aroma / taugt (als daten)
+  const LISTE = {
+    "Brennnessel":  { gift: [], aroma: ["kieselsäure", "eisen", "chlorophyll"], taugt: ["salat", "suppe", "tee", "pesto"] },
+    "Rhabarber":    { gift: ["oxalsäure in blättern"], aroma: ["säure", "vitamin c"], taugt: ["kuchen", "kompott", "saft"] },
+    "Tomate":       { gift: ["solanin in grünen stellen"], aroma: ["lycopin", "umami", "säure"], taugt: ["salat", "sauce", "roh"] },
+    "Kartoffel":    { gift: ["solanin in keimen", "grüne stellen giftig"], aroma: ["stärke", "kartoffelgeschmack"], taugt: ["kochen", "braten", "püree"] },
+    "Fenchel":      { gift: [], aroma: ["anethol", "süße"], taugt: ["salat", "tee", "gemüse", "roh"] },
+    "Kamille":      { gift: [], aroma: ["ätherisches öl", "bisabolol"], taugt: ["tee", "tinktur", "umschlag"] },
+    "Pfefferminze": { gift: [], aroma: ["menthol", "ätherisches öl"], taugt: ["tee", "salat", "dessert"] },
+    "Bärlauch":     { gift: ["verwechslung mit maiglöckchen"], aroma: ["knoblauchöl", "schwefel"], taugt: ["pesto", "suppe", "butter", "roh"] },
+    "Holunder":     { gift: ["rohe beeren giftig"], aroma: ["sambunigrin", "säure"], taugt: ["saft", "gelee", "mus"] },
+    "Löwenzahn":    { gift: [], aroma: ["bitterstoff", "inulin"], taugt: ["salat", "tee", "sirup"] },
+    "Spitzwegerich":{ gift: [], aroma: ["schleimstoff", "glykosid"], taugt: ["tee", "umschlag", "salat"] },
+    "Salbei":       { gift: ["nicht in der stillzeit"], aroma: ["thujon", "ätherisches öl"], taugt: ["tee", "gurgeln", "braten"] },
+    "Thymian":      { gift: [], aroma: ["thymol", "ätherisches öl"], taugt: ["tee", "braten", "suppe"] },
+    "Rosmarin":     { gift: [], aroma: ["cineol", "kampfer"], taugt: ["tee", "braten", "öl"] },
+    "Minze":        { gift: [], aroma: ["menthol"], taugt: ["tee", "salat", "getränk"] },
+  };
+
+  // zustand: lagerung, tage, reife, wasser, geruch, druck, farbe
+  function bewerte(name, zustand) {
+    const p = LISTE[name];
+    if (!p) return null;
+
+    const lagerBonus = { "garten": 2, "kühlschrank": 1, "tiefkühl": 2, "regal": 0 }[zustand.lagerung] ?? 0;
+    const roh =
+      (zustand.reife * 1.5) + (zustand.wasser * 1.0) +
+      (zustand.farbe * 1.0) + (zustand.geruch * 0.5) +
+      lagerBonus - (zustand.tage * 0.15) - (zustand.druck * 2.0);
+    const zahl = Math.max(3, Math.min(7, Math.round(roh)));
+
+    const jetzt = {
+      essbar:  zahl >= 5,
+      rohOK:   zahl >= 6 && !p.gift.includes("roh giftig"),
+      garenOK: zahl >= 4,
+      aroma:   zustand.geruch >= 0.5,
+      giftig:  p.gift.length > 0 && zahl <= 3,
+    };
+    const tageBisKipp = Math.max(0, Math.floor((zahl - 3) * 2));
+    const später = {
+      tage: tageBisKipp,
+      wird: tageBisKipp === 0 ? "jetzt oder nie"
+          : tageBisKipp <= 1 ? "kippt morgen"
+          : tageBisKipp <= 3 ? "hält noch kurz" : "hält",
+    };
+    const giftStärke  = p.gift.length  * (1 - zahl / 7);
+    const aromaStärke = p.aroma.length * (zahl / 7);
+
+    return {
+      name, zahl,
+      skala: SKALA[zahl],
+      zustand: zustand,
+      jetzt, später,
+      gift:  { stärke: giftStärke,  liste: p.gift,  status: giftStärke  >= 0.4 ? "achtung" : "keins" },
+      aroma: { stärke: aromaStärke, liste: p.aroma, status: aromaStärke >= 0.4 ? "vorhanden" : "schwach" },
+      taugt: p.taugt.filter(t => t !== "roh" || jetzt.rohOK),
+    };
+  }
+
+  return { SKALA, LISTE, bewerte };
+})();
+
+// ============================================================
+// KULTUR · die traditionen
+// ============================================================
+const KULTUR = (() => {
+  const TRADITIONEN = {
+    "türkisch": {
+      farbe: "#9a3a3a",
+      pflanzen: ["Brennnessel", "Minze", "Fenchel", "Thymian"],
+      text: "Türkische Küche nutzt Kräuter als Alltagsheilmittel. Minze und Thymian sind Tee, Brennnessel ist Suppe, Fenchel ist Salat.",
+    },
+    "deutsch": {
+      farbe: "#9a9a3a",
+      pflanzen: ["Kamille", "Bärlauch", "Löwenzahn", "Spitzwegerich"],
+      text: "Deutsche Klosterküche und Kräuterheilkunde. Kamille als Tee, Bärlauch im Frühling, Löwenzahn als Salat, Spitzwegerich als Hustensaft.",
+    },
+    "keltisch": {
+      farbe: "#3a5a9a",
+      pflanzen: ["Holunder", "Salbei", "Rosmarin", "Pfefferminze"],
+      text: "Keltische Überlieferung: Holunder ist der Baum der Göttin, Salbei heilt, Rosmarin erinnert, Minze erfrischt.",
+    },
+  };
+  function fürPflanze(name) {
+    const out = [];
+    for (const [k, v] of Object.entries(TRADITIONEN)) {
+      if (v.pflanzen.includes(name)) out.push({ name: k, ...v });
+    }
+    return out;
+  }
+  return { TRADITIONEN, fürPflanze };
+})();
+
+// ============================================================
+// RUNTIME · die bühne
+// ============================================================
+
+const METHODEN = [
+  { name: "schach",  farbe: "#3a5a9a", zahl: 2, beschreibung: "denken" },
+  { name: "soccer",  farbe: "#3a9a4a", zahl: 3, beschreibung: "bewegung" },
+  { name: "wetter",  farbe: "#9a9a3a", zahl: 4, beschreibung: "beobachtung" },
+  { name: "eigenes", farbe: "#9a3a9a", zahl: 5, beschreibung: "freiheit" },
+];
+
+let spieler = [
+  { id: "p1", methode: null, zähler: 0, aktiv: false },
+  { id: "p2", methode: null, zähler: 0, aktiv: false },
+  { id: "p3", methode: null, zähler: 0, aktiv: false },
+  { id: "p4", methode: null, zähler: 0, aktiv: false },
+];
+
+let letzteKombi = null;
+
+// pflanzen-zustände (editierbar)
+const PFLANZEN_STATE = {};
+for (const name of Object.keys(BITKI.LISTE)) {
+  PFLANZEN_STATE[name] = {
+    lagerung: "garten",
+    tage: 0, reife: 0.8, wasser: 0.8,
+    geruch: 0.7, druck: 0.1, farbe: 0.9,
+  };
+}
+
+// --- mathematik ---
+function ggT(a, b) { while (b) { const t = b; b = a % b; a = t; } return a; }
+function kgV(a, b) { return a / ggT(a, b) * b; }
+function gemeinsamerNenner() {
+  const aktive = spieler.filter(s => s.aktiv);
+  if (aktive.length === 0) return null;
+  return aktive.reduce((acc, s) => kgV(acc, s.methode.zahl), 1);
+}
+function aufNenner(z, von, auf) { return Math.round(z * (auf / von) * 1000) / 1000; }
+function hexZuRgb(h) { const n = parseInt(h.slice(1), 16); return [(n>>16)&255, (n>>8)&255, n&255]; }
+
+// --- runtime zeichnen ---
+function zeichneRuntime() {
+  const box = document.getElementById("runtime-grid");
+  box.innerHTML = "";
+  spieler.forEach((s, i) => {
+    const el = document.createElement("div");
+    el.className = "slot" + (s.aktiv ? " aktiv" : " leer");
+    el.style.color = s.methode ? s.methode.farbe : "#6a6a7a";
+    if (s.aktiv) {
+      el.innerHTML =
+        '<div class="name">' + s.methode.name + '</div>' +
+        '<div class="wert" style="color:' + s.methode.farbe + '">' + s.zähler + '/' + s.methode.zahl + '</div>' +
+        '<div class="info">' + s.methode.beschreibung + '</div>';
+    } else {
+      el.innerHTML =
+        '<div class="name">slot ' + (i+1) + '</div>' +
+        '<div class="wert">—</div>' +
+        '<div class="info">tap</div>';
+    }
+    el.addEventListener("pointerdown", ev => { ev.preventDefault(); tippeSlot(s); }, { passive: false });
+    box.appendChild(el);
+  });
+}
+
+function tippeSlot(s) {
+  if (!s.aktiv) {
+    const benutzt = new Set(spieler.filter(x => x.aktiv).map(x => x.methode.name));
+    const frei = METHODEN.find(m => !benutzt.has(m.name));
+    if (!frei) return;
+    s.methode = frei;
+    s.zähler = Math.floor(Math.random() * frei.zahl) + 1;
+    s.aktiv = true;
+    ACHSE.notiere({ was: "wahl." + frei.name, warum: "spieler wollte " + frei.beschreibung, fürWen: s.id, thema: frei.name, nenner: frei.zahl, deckt: frei.name });
+    AYLE.aufnehmen(s.id, "kind");
+    protokoll(s.id + " wählt " + frei.name);
+  } else {
+    s.zähler = (s.zähler % s.methode.zahl) + 1;
+    ACHSE.notiere({ was: "zug." + s.methode.name, warum: "figur bewegt", fürWen: s.id, wert: Math.random(), thema: s.methode.name, nenner: s.methode.zahl, deckt: s.methode.name });
+  }
+  zeichneRuntime(); berechne(); zeichneAchsen();
+}
+
+function berechne() {
+  const aktive = spieler.filter(s => s.aktiv);
+  const n = gemeinsamerNenner();
+  const zahlEl = document.getElementById("nenner-zahl");
+  const einsEl = document.getElementById("nenner-eins");
+  if (n === null) {
+    zahlEl.textContent = "—";
+    einsEl.textContent = "warte auf spieler";
+    document.getElementById("stand").textContent = "leer";
+    document.getElementById("führt").textContent = "—";
+    document.body.style.background = "";
+    letzteKombi = null;
+    return;
+  }
+  const summe = aktive.reduce((a, s) => a + aufNenner(s.zähler, s.methode.zahl, n), 0);
+  zahlEl.textContent = n;
+  einsEl.textContent = summe + "/" + n + " · " + aktive.map(s => s.methode.name).join(" + ");
+  const kombi = aktive.map(s => s.methode.name).sort().join("+");
+  if (kombi !== letzteKombi) {
+    letzteKombi = kombi;
+    ACHSE.notiere({ was: "berührung", warum: "zwei wirkungen treffen sich", fürWen: "raum", wert: Math.random(), thema: "alle", deckt: kombi });
+  }
+  for (let i = 0; i < aktive.length; i++)
+    for (let j = i + 1; j < aktive.length; j++)
+      AYLE.verbinden(aktive[i].id, aktive[j].id, "geschwister");
+
+  const rgb = aktive.map(s => hexZuRgb(s.methode.farbe));
+  const avg = rgb.reduce((a, c) => [a[0]+c[0], a[1]+c[1], a[2]+c[2]], [0,0,0]).map(v => Math.round(v / rgb.length));
+  document.body.style.background = "rgb(" + Math.round(avg[0]*0.18) + "," + Math.round(avg[1]*0.18) + "," + Math.round(avg[2]*0.18) + ")";
+  const ü = AYLE.überführung();
+  document.getElementById("stand").textContent = ü.name;
+  document.getElementById("führt").textContent = "führt: " + ü.führt;
+}
+
+// --- bitki zeichnen ---
+function zeichneBitki() {
+  const box = document.getElementById("bitki-liste");
+  box.innerHTML = "";
+  for (const name of Object.keys(BITKI.LISTE)) {
+    const z = PFLANZEN_STATE[name];
+    const b = BITKI.bewerte(name, z);
+    if (!b) continue;
+    const el = document.createElement("div");
+    el.className = "pflanze";
+    el.innerHTML =
+      '<div class="kopf">' +
+        '<span class="name">' + name + '</span>' +
+        '<span class="zahl" style="background:' + b.skala.farbe + '22;color:' + b.skala.farbe + '">' + b.zahl + '/7</span>' +
+      '</div>' +
+      '<div class="zustand">' + b.skala.name + ' · ' + b.skala.tat + ' · hält ' + b.später.tage + ' tage</div>' +
+      '<div class="gitter">' +
+        '<div><span class="marke">jetzt:</span> ' + (b.jetzt.essbar ? "essbar" : "nicht essbar") + '</div>' +
+        '<div><span class="marke">später:</span> ' + b.später.wird + '</div>' +
+        '<div class="gift"><span class="marke">gift:</span> ' + b.gift.status + (b.gift.liste.length ? " (" + b.gift.liste[0] + ")" : "") + '</div>' +
+        '<div class="aroma"><span class="marke">aroma:</span> ' + b.aroma.status + '</div>' +
+        '<div class="taugt"><span class="marke">taugt:</span> ' + (b.taugt.join(", ") || "—") + '</div>' +
+        '<div><span class="marke">lagerung:</span> ' + z.lagerung + '</div>' +
+      '</div>' +
+      '<div class="regler">' +
+        '<input type="range" min="0" max="10" value="' + z.tage + '" data-name="' + name + '" data-feld="tage">' +
+        '<span>' + z.tage + ' tage</span>' +
+      '</div>';
+    el.querySelector("input").addEventListener("input", (e) => {
+      PFLANZEN_STATE[e.target.dataset.name].tage = parseInt(e.target.value, 10);
+      zeichneBitki();
+    });
+    box.appendChild(el);
+  }
+}
+
+// --- kultur zeichnen ---
+function zeichneKultur() {
+  const box = document.getElementById("kultur-liste");
+  box.innerHTML = "";
+  for (const [name, t] of Object.entries(KULTUR.TRADITIONEN)) {
+    const el = document.createElement("div");
+    el.className = "kultur-block";
+    el.style.borderLeftColor = t.farbe;
+    el.innerHTML =
+      '<div class="titel" style="color:' + t.farbe + '">' + name + '</div>' +
+      '<div class="text">' + t.text + '</div>' +
+      '<div class="text"><span class="marke">pflanzen:</span> ' + t.pflanzen.join(", ") + '</div>';
+    box.appendChild(el);
+  }
+}
+
+// --- achsen zeichnen ---
+function zeichneAchsen() {
+  const a = ACHSE.bericht();
+  const ax = document.getElementById("axle-zeilen");
+  let html = '<div class="zeile"><span class="marke">ereignisse:</span> ' + a.anzahl + '</div>';
+  const top = Object.entries(a.häufigkeit).sort((x, y) => y[1] - x[1]).slice(0, 3);
+  top.forEach(([was, n]) => { html += '<div class="zeile"><span class="marke">' + was + ':</span> ' + n + '×</div>'; });
+  const d = ACHSE.deckung(METHODEN.map(m => m.name));
+  html += '<div class="zeile"><span class="marke">deckung:</span> ' + d.gesehen + '/' + d.möglich + '</div>';
+  ax.innerHTML = html;
+
+  const ay = document.getElementById("ayle-zeilen");
+  const stamm = AYLE.stammbaum();
+  const namen = Object.keys(stamm);
+  let ayH = '<div class="zeile"><span class="marke">mitglieder:</span> ' + namen.length + '</div>';
+  namen.forEach(n => {
+    const info = stamm[n];
+    ayH += '<div class="zeile"><span class="marke">' + n + ':</span> ' + info.rolle + ' · mit ' + info.mit.length + '</div>';
+  });
+  const ü = AYLE.überführung();
+  ayH += '<div class="zeile"><span class="marke">überführung:</span> ' + ü.name + ' (' + ü.stand + ')</div>';
+  ay.innerHTML = ayH;
+}
+
+function protokoll(text) {
+  const p = document.getElementById("protokoll");
+  const d = document.createElement("div");
+  d.textContent = "› " + text;
+  p.appendChild(d);
+  p.scrollTop = p.scrollHeight;
+}
+
+function würfle() {
+  const aktive = spieler.filter(s => s.aktiv);
+  if (!aktive.length) { protokoll("keine spieler"); return; }
+  aktive.forEach(s => {
+    s.zähler = Math.floor(Math.random() * s.methode.zahl) + 1;
+    ACHSE.notiere({ was: "würfel." + s.methode.name, warum: "zufall", fürWen: s.id, wert: Math.random(), thema: s.methode.name, nenner: s.methode.zahl, deckt: s.methode.name });
+  });
+  protokoll("würfel gefallen");
+  zeichneRuntime(); berechne(); zeichneAchsen();
+}
+
+function zurücksetzen() {
+  spieler = spieler.map(s => ({ id: s.id, methode: null, zähler: 0, aktiv: false }));
+  ACHSE.reset(); AYLE.reset(); letzteKombi = null;
+  document.getElementById("protokoll").innerHTML = "";
+  document.body.style.background = "";
+  protokoll("zurückgesetzt — neuer lauf");
+  zeichneRuntime(); berechne(); zeichneAchsen();
+}
+
+// --- reiter ---
+document.getElementById("reiter").addEventListener("click", (e) => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  document.querySelectorAll(".reiter button").forEach(b => b.classList.remove("aktiv"));
+  document.querySelectorAll(".seite").forEach(s => s.classList.remove("aktiv"));
+  btn.classList.add("aktiv");
+  document.getElementById("seite-" + btn.dataset.seite).classList.add("aktiv");
+});
+
+// --- uhr ---
+function tick() {
+  const d = new Date();
+  document.getElementById("uhr").textContent =
+    String(d.getHours()).padStart(2,"0") + ":" +
+    String(d.getMinutes()).padStart(2,"0") + ":" +
+    String(d.getSeconds()).padStart(2,"0");
+}
+setInterval(tick, 1000); tick();
+
+document.getElementById("btn-würfle").addEventListener("click", würfle);
+document.getElementById("btn-reset").addEventListener("click", zurücksetzen);
+document.addEventListener("dblclick", e => e.preventDefault(), { passive: false });
+
+// --- start ---
+zeichneRuntime();
+zeichneBitki();
+zeichneKultur();
+berechne();
+zeichneAchsen();
+protokoll("runtime gestartet");
+protokoll("bitki kennt " + Object.keys(BITKI.LISTE).length + " pflanzen");
+protokoll("kultur kennt " + Object.keys(KULTUR.TRADITIONEN).length + " traditionen");
+</script>
+</body>
+</html>
