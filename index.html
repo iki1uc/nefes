@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>nefes · index</title>
 <style>
-  :root { --bg:#0a0a0f; --fg:#e8e8f0; --dim:#6a6a7a; }
+  :root { --bg:#0a0a0f; --fg:#e8e8f0; --dim:#6a6a7a; --linie:#1a1a25; }
   * { box-sizing: border-box; }
   body {
     margin: 0; min-height: 100dvh;
@@ -16,7 +16,7 @@
   }
   header {
     padding: 1rem; display: flex; justify-content: space-between;
-    align-items: baseline; border-bottom: 1px solid #1a1a25;
+    align-items: baseline; border-bottom: 1px solid var(--linie);
   }
   header h1 { margin: 0; font-size: 1.1rem; font-weight: 500; letter-spacing: .1em; }
   header .meta { color: var(--dim); font-size: .75rem; }
@@ -33,7 +33,7 @@
   }
   .slot {
     aspect-ratio: 1; border-radius: 1rem;
-    background: #12121a; border: 2px solid #1a1a25;
+    background: #12121a; border: 2px solid var(--linie);
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     padding: 1rem; text-align: center; cursor: pointer;
@@ -47,27 +47,45 @@
 
   #nenner {
     text-align: center; padding: 1rem 0;
-    border-top: 1px solid #1a1a25; border-bottom: 1px solid #1a1a25;
+    border-top: 1px solid var(--linie); border-bottom: 1px solid var(--linie);
     width: 100%;
   }
   #nenner .label { font-size: .7rem; color: var(--dim); letter-spacing: .15em; text-transform: uppercase; }
   #nenner .zahl { font-size: 3rem; font-weight: 200; margin: .25rem 0; }
   #nenner .eins { font-size: .85rem; color: var(--dim); }
 
+  #überführung {
+    text-align: center; padding: .75rem;
+    font-size: .8rem; color: var(--dim);
+    border-bottom: 1px solid var(--linie);
+  }
+  #überführung .stand { font-size: 1.2rem; color: var(--fg); font-weight: 300; }
+
   #protokoll {
     padding: .75rem 1rem; font-size: .75rem; color: var(--dim);
-    min-height: 4rem; max-height: 8rem; overflow-y: auto;
+    min-height: 3rem; max-height: 6rem; overflow-y: auto;
+    border-bottom: 1px solid var(--linie);
   }
   #protokoll div { padding: .15rem 0; }
 
+  #achsen {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1px; background: var(--linie);
+    border-bottom: 1px solid var(--linie);
+  }
+  .achse-box { background: var(--bg); padding: .75rem 1rem; }
+  .achse-box .titel { font-size: .6rem; color: var(--dim); letter-spacing: .15em; text-transform: uppercase; margin-bottom: .35rem; }
+  .achse-box .zeile { font-size: .7rem; color: var(--fg); padding: .1rem 0; }
+  .achse-box .zeile .marke { color: var(--dim); }
+
   #regler { display: flex; gap: .5rem; padding: 1rem; }
   #regler button {
-    flex: 1; padding: .75rem; border: 1px solid #1a1a25;
+    flex: 1; padding: .75rem; border: 1px solid var(--linie);
     background: #12121a; color: var(--fg);
     border-radius: .5rem; font-family: inherit; font-size: .8rem;
     cursor: pointer;
   }
-  #regler button:active { background: #1a1a25; }
+  #regler button:active { background: var(--linie); }
 </style>
 </head>
 <body>
@@ -85,9 +103,25 @@
     <div class="zahl" id="nenner-zahl">—</div>
     <div class="eins" id="nenner-eins">warte auf spieler</div>
   </div>
+
+  <div id="überführung">
+    <span class="stand" id="stand">leer</span>
+    <span id="führt">—</span>
+  </div>
 </main>
 
 <div id="protokoll"></div>
+
+<div id="achsen">
+  <div class="achse-box">
+    <div class="titel">axle · achse</div>
+    <div id="axle-zeilen"></div>
+  </div>
+  <div class="achse-box">
+    <div class="titel">ayle · familie</div>
+    <div id="ayle-zeilen"></div>
+  </div>
+</div>
 
 <div id="regler">
   <button onclick="würfle()">würfle</button>
@@ -96,8 +130,134 @@
 
 <script>
 // ============================================================
-// 1. DAS WISSEN — index kennt alle dateien
+// axle.js — die achse (männlich, technisch)
+// weiß: wann, warum, für wen, wie oft, warum es deckt
 // ============================================================
+const ACHSE = (() => {
+  const log = [];
+  const zähler = new Map();
+  const personen = new Map();
+  const kombinationen = new Set();
+
+  function notiere({ was, warum, fürWen, wert = null, thema = null, nenner = null, deckt = null }) {
+    const eintrag = { zeit: Date.now(), was, warum, fürWen, wert, thema, nenner, deckt };
+    log.push(eintrag);
+    const k = `${was}`;
+    zähler.set(k, (zähler.get(k) || 0) + 1);
+    if (!personen.has(fürWen)) personen.set(fürWen, new Map());
+    const pm = personen.get(fürWen);
+    pm.set(was, (pm.get(was) || 0) + 1);
+    if (deckt) kombinationen.add(deckt);
+    return eintrag;
+  }
+
+  function wann(was) {
+    const treffer = log.filter(e => e.was === was);
+    return treffer.length ? treffer.map(e => e.zeit) : null;
+  }
+  function warum(was) {
+    return [...new Set(log.filter(e => e.was === was).map(e => e.warum))];
+  }
+  function fürWen(person) {
+    if (!personen.has(person)) return null;
+    return Object.fromEntries(personen.get(person));
+  }
+  function wieOft(was) { return zähler.get(was) || 0; }
+
+  function deckung(alleThemen) {
+    const N = alleThemen.length;
+    const möglich = Math.pow(2, N) - 1;
+    const gesehen = kombinationen.size;
+    const quote = gesehen / möglich;
+    return {
+      möglich, gesehen,
+      quote: quote.toFixed(3),
+      grund: quote >= 0.5 ? "mehr als die hälfte der ecken erreicht"
+           : quote >= 0.25 ? "ein viertel der ecken erreicht"
+           : "noch nicht genug ecken",
+    };
+  }
+
+  function bericht() {
+    return {
+      anzahl: log.length,
+      häufigkeit: Object.fromEntries(zähler),
+      personen: Object.fromEntries([...personen].map(([k, v]) => [k, Object.fromEntries(v)])),
+      kombinationen: [...kombinationen],
+      letzte: log.slice(-5),
+    };
+  }
+
+  return {
+    notiere, wann, warum, fürWen, wieOft, deckung, bericht,
+    get log() { return [...log]; },
+  };
+})();
+
+// ============================================================
+// ayle.js — die familie (weiblich, nährend)
+// aus notizen wird zusammenhalt
+// ============================================================
+const AYLE = (() => {
+  const familie = new Map(); // fürWen → { rolle, seit, mit: Set() }
+
+  function aufnehmen(person, rolle = "kind") {
+    if (!familie.has(person)) {
+      familie.set(person, { rolle, seit: Date.now(), mit: new Set() });
+    }
+    return familie.get(person);
+  }
+
+  function verbinden(a, b, wie = "geschwister") {
+    aufnehmen(a); aufnehmen(b);
+    familie.get(a).mit.add(b);
+    familie.get(b).mit.add(a);
+    if (typeof ACHSE !== "undefined") {
+      ACHSE.notiere({
+        was: "verwandt." + wie,
+        warum: "familie wächst",
+        fürWen: a + "+" + b,
+        deckt: [a, b].sort().join("+"),
+      });
+    }
+  }
+
+  function geschlossen() { return familie.size >= 4; }
+
+  function stammbaum() {
+    return Object.fromEntries(
+      [...familie].map(([name, info]) => [name, {
+        rolle: info.rolle, mit: [...info.mit], seit: info.seit,
+      }])
+    );
+  }
+
+  function überführung() {
+    const n = familie.size;
+    if (n === 0) return { stand: 0, name: "leer", führt: null };
+    if (n === 1) return { stand: 1, name: "punkt", führt: "axle" };
+    if (n === 2) return { stand: 2, name: "paar", führt: "ayle" };
+    if (n === 3) return { stand: 3, name: "raum", führt: "axle+ayle" };
+    return         { stand: 4, name: "kreis", führt: "ayle" };
+  }
+
+  function lauf() {
+    return {
+      achse: typeof ACHSE !== "undefined" ? ACHSE.bericht() : null,
+      familie: stammbaum(),
+      überführung: überführung(),
+    };
+  }
+
+  return { aufnehmen, verbinden, geschlossen, stammbaum, überführung, lauf,
+           get familie() { return [...familie]; } };
+})();
+
+// ============================================================
+// index.html — die bühne
+// ============================================================
+
+// --- 1. das wissen ---
 const WISSEN = {
   "bir.html":     "der punkt · atmet",
   "birden.js":    "sequenz · 3 schritte",
@@ -127,17 +287,15 @@ const WISSEN = {
   "foto.js":      "licht",
 };
 
-// ============================================================
-// 2. DIE METHODEN — jeder spieler wählt seine art
-// ============================================================
+// --- 2. die methoden — jeder spieler wählt seine art ---
 // Der Nenner ist das, was jeden Spieler ausmacht.
-// Er kommt aus seiner Methode.
 // Mathematik: kgV der Nenner = gemeinsamer Nenner.
+// Physik: jede Methode hat eine Wirkung (0..1).
 const METHODEN = [
-  { name: "schach",  farbe: "#3a5a9a", zahl: 2, beschreibung: "denken" },
-  { name: "soccer",  farbe: "#3a9a4a", zahl: 3, beschreibung: "bewegung" },
-  { name: "wetter",  farbe: "#9a9a3a", zahl: 4, beschreibung: "beobachtung" },
-  { name: "eigenes", farbe: "#9a3a9a", zahl: 5, beschreibung: "freiheit" },
+  { name: "schach",  farbe: "#3a5a9a", zahl: 2, beschreibung: "denken",      wirkung: () => Math.random() * 0.8 + 0.1 },
+  { name: "soccer",  farbe: "#3a9a4a", zahl: 3, beschreibung: "bewegung",    wirkung: () => Math.random() * 0.6 + 0.2 },
+  { name: "wetter",  farbe: "#9a9a3a", zahl: 4, beschreibung: "beobachtung", wirkung: () => Math.random() * 0.4 + 0.3 },
+  { name: "eigenes", farbe: "#9a3a9a", zahl: 5, beschreibung: "freiheit",    wirkung: () => Math.random() * 0.9 + 0.05 },
 ];
 
 let spieler = [
@@ -147,9 +305,7 @@ let spieler = [
   { id: "p4", methode: null, zähler: 0, aktiv: false },
 ];
 
-// ============================================================
-// 3. MATHEMATIK — der gemeinsame nenner
-// ============================================================
+// --- 3. mathematik — der gemeinsame nenner ---
 function ggT(a, b) { while (b) { [a, b] = [b, a % b]; } return a; }
 function kgV(a, b) { return a * b / ggT(a, b); }
 
@@ -163,9 +319,7 @@ function aufNenner(zähler, vonNenner, aufNenner) {
   return zähler * (aufNenner / vonNenner);
 }
 
-// ============================================================
-// 4. DARSTELLUNG
-// ============================================================
+// --- 4. darstellung ---
 function zeichne() {
   const box = document.getElementById("spieler");
   box.innerHTML = "";
@@ -194,13 +348,34 @@ function zeichne() {
           s.methode = frei;
           s.zähler = Math.floor(Math.random() * frei.zahl) + 1;
           s.aktiv = true;
+          // axle: notiere die wahl
+          ACHSE.notiere({
+            was: "wahl." + frei.name,
+            warum: "spieler wollte " + frei.beschreibung,
+            fürWen: s.id,
+            thema: frei.name,
+            nenner: frei.zahl,
+            deckt: frei.name,
+          });
+          // ayle: nimm die person auf
+          AYLE.aufnehmen(s.id, "kind");
           protokoll(`${s.id} wählt ${frei.name} → ${s.zähler}/${frei.zahl}`);
         }
       } else {
         s.zähler = (s.zähler % s.methode.zahl) + 1;
+        // axle: notiere den zug
+        ACHSE.notiere({
+          was: "zug." + s.methode.name,
+          warum: "figur bewegt",
+          fürWen: s.id,
+          wert: s.methode.wirkung(),
+          thema: s.methode.name,
+          nenner: s.methode.zahl,
+          deckt: s.methode.name,
+        });
         protokoll(`${s.id} → ${s.zähler}/${s.methode.zahl}`);
       }
-      zeichne(); berechne();
+      zeichne(); berechne(); zeichneAchsen();
     };
     box.appendChild(el);
   });
@@ -222,11 +397,61 @@ function berechne() {
   const namen = aktive.map(s => s.methode.name).join(" + ");
   einsEl.textContent = `${summe}/${n} · ${namen}`;
 
+  // physik: die wirkungen interferieren
+  const wirkungen = aktive.map(s => s.methode.wirkung());
+  const mittel = wirkungen.reduce((a, b) => a + b, 0) / wirkungen.length;
+  const phase = wirkungen.reduce((a, b) => a * b, 1);
+  ACHSE.notiere({
+    was: "berührung",
+    warum: "zwei wirkungen treffen sich",
+    fürWen: "raum",
+    wert: mittel,
+    thema: "alle",
+    deckt: aktive.map(s => s.methode.name).sort().join("+"),
+  });
+
+  // farbe mischen
   const rgb = aktive.map(s => hexZuRgb(s.methode.farbe));
   const avg = rgb.reduce((a, c) => [a[0]+c[0], a[1]+c[1], a[2]+c[2]], [0,0,0])
                  .map(v => Math.round(v / rgb.length));
   document.body.style.background =
     `rgb(${Math.round(avg[0]*0.18)},${Math.round(avg[1]*0.18)},${Math.round(avg[2]*0.18)})`;
+
+  // überführung anzeigen
+  const ü = AYLE.überführung();
+  document.getElementById("stand").textContent = ü.name;
+  document.getElementById("führt").textContent = ü.führt ? "· führt: " + ü.führt : "";
+
+  // familie verbinden: wer mit wem
+  if (aktive.length >= 2) {
+    for (let i = 0; i < aktive.length; i++) {
+      for (let j = i + 1; j < aktive.length; j++) {
+        AYLE.verbinden(aktive[i].id, aktive[j].id, "geschwister");
+      }
+    }
+  }
+}
+
+function zeichneAchsen() {
+  const a = ACHSE.bericht();
+  const f = AYLE.lauf();
+
+  const ax = document.getElementById("axle-zeilen");
+  ax.innerHTML = `<div class="zeile"><span class="marke">ereignisse:</span> ${a.anzahl}</div>`;
+  const top = Object.entries(a.häufigkeit).sort((x, y) => y[1] - x[1]).slice(0, 3);
+  top.forEach(([was, n]) => {
+    ax.innerHTML += `<div class="zeile"><span class="marke">${was}:</span> ${n}×</div>`;
+  });
+  const d = ACHSE.deckung(METHODEN.map(m => m.name));
+  ax.innerHTML += `<div class="zeile"><span class="marke">deckung:</span> ${d.gesehen}/${d.möglich} (${d.quote})</div>`;
+  ax.innerHTML += `<div class="zeile"><span class="marke">grund:</span> ${d.grund}</div>`;
+
+  const ay = document.getElementById("ayle-zeilen");
+  ay.innerHTML = `<div class="zeile"><span class="marke">mitglieder:</span> ${AYLE.familie.length}</div>`;
+  AYLE.familie.forEach(([name, info]) => {
+    ay.innerHTML += `<div class="zeile"><span class="marke">${name}:</span> ${info.rolle} · mit ${info.mit.length}</div>`;
+  });
+  ay.innerHTML += `<div class="zeile"><span class="marke">überführung:</span> ${f.überführung.name} (${f.überführung.stand})</div>`;
 }
 
 function protokoll(text) {
@@ -245,28 +470,37 @@ function hexZuRgb(hex) {
 function würfle() {
   spieler.filter(s => s.aktiv).forEach(s => {
     s.zähler = Math.floor(Math.random() * s.methode.zahl) + 1;
+    ACHSE.notiere({
+      was: "würfel." + s.methode.name,
+      warum: "zufall",
+      fürWen: s.id,
+      wert: s.methode.wirkung(),
+      thema: s.methode.name,
+      nenner: s.methode.zahl,
+      deckt: s.methode.name,
+    });
   });
   protokoll("würfel gefallen");
-  zeichne(); berechne();
+  zeichne(); berechne(); zeichneAchsen();
 }
 
 function zurücksetzen() {
   spieler = spieler.map(s => ({ ...s, methode: null, zähler: 0, aktiv: false }));
   document.getElementById("protokoll").innerHTML = "";
   document.body.style.background = "";
-  protokoll("zurückgesetzt");
-  zeichne(); berechne();
+  // achse und familie zurücksetzen (neue instanzen)
+  // hinweis: ACHSE und AYLE sind IIFEs. Für den reset legen wir sie neu an.
+  // Das ist bewusst so: ein reset ist ein neuer lauf.
+  location.reload();
 }
 
-// ============================================================
-// 5. START
-// ============================================================
+// --- 5. start ---
 function tick() {
   document.getElementById("uhr").textContent = new Date().toTimeString().slice(0,8);
 }
 setInterval(tick, 1000); tick();
 
-zeichne(); berechne();
+zeichne(); berechne(); zeichneAchsen();
 protokoll("index kennt " + Object.keys(WISSEN).length + " dateien");
 protokoll("wähle 3 oder 4 methoden");
 </script>
