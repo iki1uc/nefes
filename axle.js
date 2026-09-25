@@ -1,3 +1,4 @@
+// TMP · VORLÄUFIG · name bleibt · nur der kopf sagt: noch nicht fertig
 // ============================================================
 // axle.js — ACHSE · das auge
 // sieht: foto · bild · schnappschuss
@@ -13,7 +14,6 @@ const ACHSE = (() => {
       const el = document.getElementById(n);
       if (el && el.tagName === "CANVAS") return el;
     }
-    // letzter versuch: irgendein canvas auf der seite
     return document.querySelector("canvas");
   }
 
