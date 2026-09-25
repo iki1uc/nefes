@@ -1,10 +1,55 @@
-// In bir.html — draw() reparieren
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>bir · der punkt</title>
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  canvas{display:block;width:100vw;height:100vh}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+"use strict";
+
+// ---- 1. canvas ----
+const c = document.getElementById("c");
+const ctx = c.getContext("2d");
+
+// ---- 2. ATEM ----
+// 4 sekunden ein, 4 sekunden aus. wie NEFES.
+const ATEM = 4000;
+
+// ---- 3. zeit ----
+const now = () => performance.now();
+const raf = (fn) => requestAnimationFrame(fn);
+const start = now();
+
+// ---- 4. größe ----
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  c.width  = window.innerWidth  * dpr;
+  c.height = window.innerHeight * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener("resize", resize);
+resize();
+
+// ---- 5. draw ----
 function draw() {
   const t = now() - start;
-  ctx.fillStyle = '#000';
+  ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, c.width, c.height);
 
-  const phase = (t % (ATEM * 2)) / (ATEM * 2);
+  // wenn NEFES da ist: seinen takt lesen
+  // sonst: eigenen takt
+  const phase =
+    (typeof window.NEFES !== "undefined" && window.NEFES.phase !== undefined)
+      ? window.NEFES.phase
+      : (t % (ATEM * 2)) / (ATEM * 2);
+
   const atem = (Math.sin(phase * Math.PI * 2) + 1) / 2;
 
   const cx = c.width / 2;
@@ -14,19 +59,24 @@ function draw() {
 
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(0, 255, 170, ' + alpha + ')';
+  ctx.fillStyle = "rgba(0, 255, 170, " + alpha + ")";
   ctx.fill();
 
-  // WICHTIG: Kein console.log hier drin!
   raf(draw);
 }
 
-// NEU: Kontext-Verlust abfangen (einmalig, außerhalb von draw())
-c.addEventListener('contextlost', function(e) {
+// ---- 6. kontext verloren / zurück ----
+c.addEventListener("contextlost", function (e) {
   e.preventDefault();
-  console.log('Canvas-Kontext verloren — warte auf Wiederherstellung');
+  console.log("Canvas-Kontext verloren — warte auf Wiederherstellung");
 });
-c.addEventListener('contextrestored', function() {
-  console.log('Canvas-Kontext wiederhergestellt');
-  resize(); // Canvas neu aufbauen
+c.addEventListener("contextrestored", function () {
+  console.log("Canvas-Kontext wiederhergestellt");
+  resize();
 });
+
+// ---- 7. start ----
+raf(draw);
+</script>
+</body>
+</html>
