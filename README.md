@@ -1,12 +1,17 @@
 # nefes
 
-> Ein Atem. Ein Punkt. Eine Struktur aus JavaScript-Dateien, die Klärung durch Kombination sucht.
+> Ein Atem. Ein Punkt. Eine Struktur aus JavaScript-Dateien,
+> die Klärung durch Kombination sucht.
 
-**nefes** (Atem) ist kein Spiel. Es ist ein **Marker**. Es ist eine Sammlung von kleinen, in sich geschlossenen Dateien, die zusammen eine Logik ergeben: **bir → iki → uc → ki → klar → dur → ikilem**.
+**nefes** (Atem) ist kein Spiel. Es ist ein **Marker**.
+Es ist eine Sammlung von kleinen, in sich geschlossenen Dateien,
+die zusammen eine Logik ergeben:
+**bir → iki → uc → ki → klar → dur → ikilem**.
 
-Jede Datei ist für sich lauffähig. Keine lädt die andere. Aber wenn sie zusammenkommen, entsteht ein Raum.
+Jede Datei ist für sich lauffähig. Keine lädt die andere.
+Aber wenn sie zusammenkommen, entsteht ein Raum.
 
-## Inhalt des Repositories
+## Inhalt
 
 | Datei | Türkçe | Maya | Inka | Was es tut |
 |---|---|---|---|---|
@@ -24,15 +29,33 @@ Jede Datei ist für sich lauffähig. Keine lädt die andere. Aber wenn sie zusam
 ## Philosophie
 
 - **Türkçe** ist die Arbeitssprache. Die Funktionen heißen `ekle`, `cikar`, `durum`.
-- **Maya** und **Inka** flüstern. Sie geben den Zuständen ihre Namen (hun, ka, ox / huk, iskay, kimsa).
+- **Maya** und **Inka** flüstern. Sie geben den Zuständen ihre Namen.
 - **Kein Framework.** Nur Canvas 2D, `requestAnimationFrame`, `fetch`.
 - **Offline zuerst.** Alles läuft lokal. Online ist optional.
 - **Kein Spiel.** Ein Marker.
 
+## Was noch nicht läuft
+
+- `axle.js`, `ayle.js`, `bitki.js`, `kultur.js` sind **Hörer ohne Definition**.
+  Sie rufen `ACHSE.sehe()`, `AYLE.höre()`, `BITKI.fühle()`.
+  Aber niemand hat `ACHSE`, `AYLE`, `BITKI` erschaffen.
+- `index.html` lädt **nichts**. Die Bühne ist leer.
+
 ## Installation
 
-Es gibt nichts zu installieren. Jede Datei ist in sich geschlossen.
+Es gibt nichts zu installieren.
+Jede Datei ist in sich geschlossen.
 
-1.  Repository klonen:
-    ```bash
-    git clone https://github.com/iki1uc/nefes.git
+```bash
+git clone https://github.com/iki1uc/nefes.git
+
+Lizenz
+MIT.
+
+Was das ist
+Kein Spiel.
+Kein Produkt.
+Kein Versprechen.
+
+Ein Atem.
+
