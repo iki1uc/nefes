@@ -4,7 +4,7 @@
 > die Klärung durch Kombination sucht.
 
 **nefes** (Atem) ist kein Spiel. Es ist ein **Marker**.
-Es ist eine Sammlung von kleinen, in sich geschlossenen Dateien,
+Eine Sammlung kleiner, in sich geschlossener Dateien,
 die zusammen eine Logik ergeben:
 **bir → iki → uc → ki → klar → dur → ikilem**.
 
@@ -34,6 +34,33 @@ Aber wenn sie zusammenkommen, entsteht ein Raum.
 - **Offline zuerst.** Alles läuft lokal. Online ist optional.
 - **Kein Spiel.** Ein Marker.
 
+Ein Kind und ein fünfundsiebzigjähriger Bauer sitzen vor derselben Pflanze.
+Das Kind sieht Orange. Der Bauer sieht zwei Wochen, drei Bedingungen, eine Kiste.
+**Beide haben recht. Beide lernen.**
+
+## Farben und Zahlen
+
+| Farbe | Zahl | Was sie bedeutet |
+|---|---|---|
+| blau | 2 | denken |
+| grün | 3 | bewegen |
+| gelb | 4 | schauen |
+| violett | 5 | Freiheit |
+
+Der gemeinsame Nenner — der **gemeinsame Teiler** — wird mit Mathematik gefunden.
+
+Nicht mit Meinung. Mit Rechnung.
+
+## Für wen
+
+**Für den Bürger.**
+**Für den Schüler.**
+**Für den Rentner.**
+**Für den Neugierigen.**
+**Für den Nachbarn.**
+
+Kurz: **für alle.**
+
 ## Was noch nicht läuft
 
 - `axle.js`, `ayle.js`, `bitki.js`, `kultur.js` sind **Hörer ohne Definition**.
@@ -41,21 +68,24 @@ Aber wenn sie zusammenkommen, entsteht ein Raum.
   Aber niemand hat `ACHSE`, `AYLE`, `BITKI` erschaffen.
 - `index.html` lädt **nichts**. Die Bühne ist leer.
 
+## Wie man hineinsieht
+
+👉 **[iki1uc.github.io/nefes](https://iki1uc.github.io/nefes/)**
+
+Nichts herunterladen. Nichts installieren. Nicht anmelden. Nur öffnen. Atmen.
+
 ## Installation
 
 Es gibt nichts zu installieren.
 Jede Datei ist in sich geschlossen.
+Wer will, klont:
 
 ```bash
 git clone https://github.com/iki1uc/nefes.git
 
+Dann index.html öffnen.
+Aber wie gesagt: nötig ist es nicht.
+Der Link oben genügt.
+
 Lizenz
 MIT.
-
-Was das ist
-Kein Spiel.
-Kein Produkt.
-Kein Versprechen.
-
-Ein Atem.
-
