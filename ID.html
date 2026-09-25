@@ -2,260 +2,89 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>kimlik · marker</title>
+<title>tmp · id test · verwickeln</title>
 <style>
-  html,body{margin:0;height:100%;background:#0a0a14;color:#eee;
-            font-family:sans-serif;overflow:auto}
-  #marker{max-width:560px;margin:0 auto;padding:40px 20px}
-  h1{color:#ffcc44;font-size:22px;margin:0 0 6px;letter-spacing:1px}
-  .maya-inka{color:#5fc8ff;font-size:12px;margin-bottom:24px}
-  .maya-inka .maya{color:#00ffaa}
-  .maya-inka .inka{color:#ff0066}
-  .block{border-left:3px solid #1a1a2a;padding:12px 16px;margin:16px 0;
-         background:rgba(255,255,255,0.02)}
-  .block .label{color:#ffcc44;font-weight:bold;font-size:13px}
-  .block .satz{font-size:15px;margin-top:6px;line-height:1.6}
-  .block .hauch{color:#888;font-size:11px;margin-top:4px}
-  .marker-id{font-family:monospace;color:#00ffaa;font-size:11px;
-             margin-top:24px;padding:8px;background:rgba(0,255,170,0.05);
-             border:1px solid #1a3a2a;border-radius:4px}
-  .fuss{color:#444;font-size:10px;margin-top:40px;text-align:center}
-  canvas{display:block;margin:24px auto;background:#0a0a14;border-radius:50%}
+  body{background:#0a0a14;color:#eee;font-family:sans-serif;padding:20px}
+  #steuer{margin-bottom:20px}
+  button{background:#1a3a2a;color:#00ffaa;border:1px solid #00ffaa;
+         padding:8px 14px;margin:4px;border-radius:4px;cursor:pointer;
+         font-family:monospace}
+  button:hover{background:#00ffaa;color:#0a0a14}
+  #log{font-family:monospace;font-size:12px;color:#5fc8ff;
+       background:rgba(0,255,170,.05);padding:10px;border-radius:4px;
+       margin-top:16px;max-height:200px;overflow:auto}
+  iframe{border:1px solid #1a3a2a;border-radius:8px;
+         width:600px;height:800px;background:#0a0a14}
 </style>
 </head>
 <body>
-<div id="marker">
 
-  <h1>kimlik · marker</h1>
-  <div class="maya-inka">
-    <span class="maya">maya · u hal</span> ·
-    <span class="inka">inka · kawsay</span> ·
-    türkçe · kimlik
-  </div>
+<h1 style="color:#ffcc44;font-size:16px">tmp · verwickeln test</h1>
 
-  <!-- wer -->
-  <div class="block">
-    <div class="label">kim · wer</div>
-    <div class="satz">
-      ben · sen · siz · biz
-    </div>
-    <div class="hauch">
-      maya: hun · ka · ox · kan<br>
-      inka: huk · iskay · kimsa · tawa
-    </div>
-  </div>
-
-  <!-- wo -->
-  <div class="block">
-    <div class="label">nerde · wo</div>
-    <div class="satz">
-      burada · orada · her yerde
-    </div>
-    <div class="hauch">
-      maya: kay · chan · maya<br>
-      inka: kay · chay · llapa
-    </div>
-  </div>
-
-  <!-- warum -->
-  <div class="block">
-    <div class="label">neden · warum</div>
-    <div class="satz">
-      çünkü · bu yüzden · belki
-    </div>
-    <div class="hauch">
-      maya: tumen · bey · ma'<br>
-      inka: chaymanta · chhayna · ichaqa
-    </div>
-  </div>
-
-  <!-- Marker-Canvas -->
-  <canvas id="cm" width="80" height="80"></canvas>
-
-  <!-- der Marker selbst -->
-  <div class="marker-id" id="id-out">marker · warte…</div>
-
-  <div class="fuss">
-    oyun değil · nicht Spiel · marker
-  </div>
-
+<div id="steuer">
+  <button onclick="yukle('sorge')">+ sorge</button>
+  <button onclick="yukle('ikilem')">+ ikilem</button>
+  <button onclick="yukle('hal')">+ hal</button>
+  <button onclick="yukle('uc')">+ üç</button>
+  <button onclick="yukle('klar')">+ klar</button>
+  <button onclick="yukle('dur')">+ dur</button>
+  <button onclick="yukle('iki')">+ iki</button>
+  <button onclick="sifirla()" style="color:#ff0066;border-color:#ff0066">sıfırla</button>
 </div>
 
+<iframe id="cerceve" src="ID.html"></iframe>
+
+<div id="log">log · warte…</div>
+
 <script>
-// ============================================================
-// id.html — der Marker
-// kim · nerde · neden
-// ben · sen · siz · biz
-// Türkçe arbeitet. Maya und Inka flüstern.
-// Nicht Spiel. Marker.
-// ============================================================
+const LOG = document.getElementById('log');
+function yaz(s){
+  LOG.textContent = new Date().toLocaleTimeString() + ' · ' + s + '\n' + LOG.textContent;
+}
 
-(function () {
-  'use strict';
+// Zugriff auf das iframe-Fenster — dort lebt ID.html
+function pencere(){
+  return document.getElementById('cerceve').contentWindow;
+}
 
-  // ------------------------------------------------------------
-  // WER — ben, sen, siz, biz
-  // ------------------------------------------------------------
-  const KIM = {
-    ben:  { tr: 'ben',  maya: 'hun',  inka: 'huk',   zahl: 1 },
-    sen:  { tr: 'sen',  maya: 'ka',   inka: 'iskay', zahl: 2 },
-    siz:  { tr: 'siz',  maya: 'ox',   inka: 'kimsa', zahl: 3 },
-    biz:  { tr: 'biz',  maya: 'kan',  inka: 'tawa',  zahl: 4 }
-  };
+// Simuliert das Laden einer Geschwister-Datei
+function yukle(ad){
+  const w = pencere();
+  if (!w) return;
 
-  // ------------------------------------------------------------
-  // WO — burada, orada, her yerde
-  // ------------------------------------------------------------
-  const NERDE = {
-    burada:    { maya: 'kay',  inka: 'kay'  },
-    orada:     { maya: 'chan', inka: 'chay' },
-    heryerde:  { maya: 'maya', inka: 'llapa' }
-  };
+  // Objektname auf window legen (genau das, was deine ID.html prüft)
+  const isim = (ad === 'uc') ? 'üç' : ad;
+  w[isim] = { ad: isim, yuklendi: new Date().toISOString() };
 
-  // ------------------------------------------------------------
-  // WARUM — çünkü, bu yüzden, belki
-  // ------------------------------------------------------------
-  const NEDEN = {
-    cunku:    { tr: 'çünkü',   maya: 'tumen',      inka: 'chaymanta' },
-    buyuzden: { tr: 'bu yüzden', maya: 'bey',      inka: 'chhayna'  },
-    belki:    { tr: 'belki',   maya: 'ma\'',       inka: 'ichaqa'   }
-  };
+  yaz('yüklendi: window.' + isim);
 
-  // ------------------------------------------------------------
-  // MARKER — der gerechtfertigte Zustand
-  // Liest, was da ist. Fügt nichts hinzu.
-  // ------------------------------------------------------------
-  function marker() {
-    const teile = [];
-
-    // Wer ist da?
-    Object.keys(KIM).forEach(k => { if (KIM[k]) teile.push(k); });
-
-    // Wo?
-    const wo = Object.keys(NERDE)[0];
-
-    // Warum?
-    const warum = Object.keys(NEDEN)[0];
-
-    // Andere Dateien — was ist geladen?
-    const geladen = [];
-    if (typeof window.sorge === 'object')  geladen.push('sorge');
-    if (typeof window.ikilem === 'object') geladen.push('ikilem');
-    if (typeof window.hal === 'object')    geladen.push('hal');
-    if (typeof window.üç === 'object')     geladen.push('uc');
-    if (typeof window.klar === 'object')   geladen.push('klar');
-    if (typeof window.dur === 'object')    geladen.push('dur');
-    if (typeof window.iki === 'object')    geladen.push('iki');
-
-    const n = geladen.length;
-
-    return {
-      marker: 'id',
-      kim: teile,
-      nerde: wo,
-      neden: warum,
-      geladen: geladen,
-      anzahl: n,
-      maya: n === 0 ? 'ma\'' : n === 1 ? 'hun' : n === 2 ? 'ka' : n === 3 ? 'ox' : 'kan',
-      inka: n === 0 ? 'mana' : n === 1 ? 'huk' : n === 2 ? 'iskay' : n === 3 ? 'kimsa' : 'tawa',
-      bereit: n > 0,
-      hinweis: n + ' parça yüklü · ' + n + ' Teile geladen',
-      saat: new Date().toISOString()
-    };
-  }
-
-  // ------------------------------------------------------------
-  // BILD — der Marker als Kreis
-  // ------------------------------------------------------------
-  function bild() {
-    const c = document.getElementById('cm');
-    if (!c) return;
-    const ctx = c.getContext('2d');
-    const m = marker();
-
-    c.width = 160;
-    c.height = 160;
-
-    const cx = 80, cy = 80, r = 60;
-
-    // Hintergrund-Kreis
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.strokeStyle = '#1a3a2a';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // Fortschritt — wie viele Teile geladen
-    const p = Math.min(1, m.anzahl / 7);
-    const s = -Math.PI / 2;
-    const e = s + Math.PI * 2 * p;
-
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, s, e);
-    ctx.strokeStyle = '#00ffaa';
-    ctx.lineWidth = 4;
-    ctx.lineCap = 'round';
-    ctx.stroke();
-
-    // Zahl in der Mitte
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 24px monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(m.anzahl + '/7', cx, cy - 6);
-
-    ctx.fillStyle = '#5fc8ff';
-    ctx.font = '10px monospace';
-    ctx.fillText('parça', cx, cy + 14);
-  }
-
-  // ------------------------------------------------------------
-  // ANZEIGE — der Marker als Text
-  // ------------------------------------------------------------
-  function anzeige() {
-    const el = document.getElementById('id-out');
-    if (!el) return;
-    const m = marker();
-    el.textContent =
-      'marker ' + m.marker +
-      ' · ' + m.anzahl + ' parça' +
-      ' · maya ' + m.maya +
-      ' · inka ' + m.inka +
-      ' · ' + m.hinweis;
-  }
-
-  // ------------------------------------------------------------
-  // WÄHREND — läuft weiter, während alles läuft
-  // ------------------------------------------------------------
-  function waehrend() {
-    setInterval(function () {
-      bild();
-      anzeige();
-    }, 1000);
-  }
-
-  // ------------------------------------------------------------
-  // ÖFFENTLICH
-  // ------------------------------------------------------------
-  window.id = {
-    marker: marker,
-    KIM: KIM,
-    NERDE: NERDE,
-    NEDEN: NEDEN,
-    bild: bild,
-    anzeige: anzeige
-  };
-
-  // Start
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-      bild(); anzeige(); waehrend();
+  // WICHTIG: Verwickeln — Marker sofort aufrufen und reagieren lassen
+  if (w.id && typeof w.id.marker === 'function') {
+    w.id.marker(function(m){
+      yaz('  ↳ ReCALL: ' + m.anzahl + '/7 parça · maya ' + m.maya + ' · inka ' + m.inka);
+      if (m.bereit) {
+        yaz('  ↳ marker bereit · ' + m.hinweis);
+      }
     });
-  } else {
-    bild(); anzeige(); waehrend();
+    // Anzeige im iframe aktualisieren
+    w.id.bild();
+    w.id.anzeige();
   }
-})();
+}
+
+function sifirla(){
+  const w = pencere();
+  ['sorge','ikilem','hal','üç','klar','dur','iki'].forEach(k => {
+    try { delete w[k]; } catch(e) { w[k] = undefined; }
+  });
+  LOG.textContent = 'sıfırlandı ·\n';
+  if (w.id) { w.id.bild(); w.id.anzeige(); }
+}
+
+// Beim Start: iframe bereit?
+document.getElementById('cerceve').addEventListener('load', function(){
+  yaz('ID.html yüklendi · hazır');
+});
 </script>
 </body>
 </html>
